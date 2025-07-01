@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { fetchGitHubContributions } from '@/lib/github-auth';
+import { encrypt, decrypt } from '@/lib/encryption';
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -71,11 +72,12 @@ export async function POST(request: NextRequest) {
         throw new Error(`Invalid token: ${data.errors[0]?.message || 'Unknown error'}`);
       }
 
-      // Token is valid, update user record
+      // Token is valid, encrypt and update user record
+      const encryptedToken = encrypt(personalAccessToken);
       await prisma.user.update({
         where: { id: user.id },
         data: {
-          personalAccessToken: personalAccessToken,
+          personalAccessToken: encryptedToken,
           patUpdatedAt: new Date()
         }
       });

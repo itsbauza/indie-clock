@@ -24,7 +24,7 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
       }
       setError(null);
       
-      const response = await fetch(`/api/github/contributions?username=${encodeURIComponent(username || '')}&sync=${sync}`);
+      const response = await fetch(`/api/github/contributions`);
       
       if (!response.ok) {
         const errorData = await response.json();
