@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "IndieClock",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Auth.js v5 required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  
+  // Custom fields for your app
+  githubId      String?   @unique
+  username      String?   @unique
+  accessToken   String?   // Encrypted GitHub access token
+  refreshToken  String?   // Encrypted GitHub refresh token
+  tokenExpiresAt DateTime?
+  
+  // Personal Access Token for private contributions
+  personalAccessToken String?   // Encrypted Personal Access Token
+  patUpdatedAt        DateTime?
+  
+  // RabbitMQ Configuration
+  rabbitmqUsername String?   @unique
+  rabbitmqPassword String?   // Encrypted RabbitMQ password
+  
+  // GitHub Data
+  contributions Contribution[]
+  lastSyncAt    DateTime?
+  
+  // RabbitMQ Messages
+  rabbitmqMessages RabbitMQMessage[]
+  
+  // Custom Sessions (keeping for backward compatibility)
+  userSessions      UserSession[]
+  
+  // Auth.js relations
+  accounts Account[]
+  sessions Session[]
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Contribution {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime
+  count     Int
+  year      Int
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, date])
+  @@map("contributions")
+}
+
+model RabbitMQMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  topic     String
+  message   Json
+  sentAt    DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("rabbitmq_messages")
+}
+
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_sessions")
+} 

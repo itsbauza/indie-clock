@@ -1,0 +1,20 @@
+meta {
+  name: Contribution
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://api.github.com/graphql
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": "query($userName: String!) {user(login: $userName) {contributionsCollection {contributionCalendar { totalContributions weeks { contributionDays { date contributionCount } } } } } }",
+    "variables": {
+      "userName": "llbauza-beltech"
+    }
+  }
+}

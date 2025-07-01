@@ -1,36 +1,259 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Indie Clock
 
-## Getting Started
+A GitHub contribution tracker for Awtrix clocks with RabbitMQ messaging and PostgreSQL database.
 
-First, run the development server:
+## Features
+
+- **GitHub Integration**: Fetch and cache user contribution data
+- **RabbitMQ Messaging**: Secure message publishing for Awtrix clocks
+- **PostgreSQL Database**: Persistent storage with Prisma ORM
+- **User Management**: Secure authentication with Auth.js v5 (Google & GitHub)
+- **Real-time Updates**: Live data synchronization with Awtrix displays
+
+## Architecture
+
+- **Frontend**: Next.js with TypeScript
+- **Backend**: Next.js API routes
+- **Database**: PostgreSQL with Prisma ORM
+- **Message Broker**: RabbitMQ with MQTT plugin
+- **Authentication**: Auth.js v5 with Google and GitHub OAuth
+
+## Quick Start
+
+### 1. Prerequisites
+
+- Docker and Docker Compose
+- Node.js 18+
+- Google OAuth App
+- GitHub OAuth App
+
+### 2. Setup
+
+```bash
+# Clone the repository
+git clone <your-repo>
+cd indie-clock
+
+# Make setup script executable
+chmod +x setup-database.sh
+
+# Run setup
+./setup-database.sh
+
+# Start services
+docker-compose up -d
+
+# Install dependencies
+npm install
+
+# Setup database
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+```
+
+### 3. Environment Configuration
+
+Create `.env.local` with:
+
+```env
+# Database
+DATABASE_URL="postgresql://postgres:postgres_password@localhost:5432/indie_clock"
+
+# Auth.js Configuration
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret-key-here"
+
+# Google OAuth
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# GitHub OAuth
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+# RabbitMQ Configuration
+RABBITMQ_URL=amqp://backend:backend_password@localhost:5672
+RABBITMQ_ADMIN_URL=http://admin:admin_password@localhost:15672
+```
+
+### 4. OAuth Setup
+
+#### Google OAuth
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable Google+ API
+4. Create OAuth 2.0 credentials
+5. Add `http://localhost:3000/api/auth/callback/google` to authorized redirect URIs
+
+#### GitHub OAuth
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Create a new OAuth App
+3. Set Homepage URL to `http://localhost:3000`
+4. Set Authorization callback URL to `http://localhost:3000/api/auth/callback/github`
+
+### 5. Start Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Access Points
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Application**: http://localhost:3000
+- **Sign In**: http://localhost:3000/auth/signin
+- **RabbitMQ Management**: http://localhost:15672 (admin/admin_password)
+- **pgAdmin**: http://localhost:5050 (admin@indieclock.com/admin_password)
+- **Prisma Studio**: `npm run db:studio`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API Endpoints
 
-## Learn More
+### GitHub Contributions
 
-To learn more about Next.js, take a look at the following resources:
+```
+GET /api/github/contributions?username=<username>&sync=true
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Parameters:
+- `username`: GitHub username (optional, defaults to authenticated user)
+- `sync`: Force sync with GitHub (optional)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Response:
+```json
+{
+  "success": true,
+  "data": {
+    "totalContributions": 1234,
+    "contributions": [...]
+  },
+  "lastSync": "2024-01-01T00:00:00Z",
+  "synced": true
+}
+```
 
-## Deploy on Vercel
+## Authentication
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The app uses Auth.js v5 with the following providers:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Google**: For general user authentication
+- **GitHub**: For GitHub-specific features and contribution tracking
+
+### Session Management
+
+- Sessions are stored in the database
+- Users can sign in with either Google or GitHub
+- GitHub users get additional access to contribution tracking features
+
+## RabbitMQ Topics
+
+Each user gets their own secure topics:
+
+- `users.{username}.github-contributions` - GitHub contribution data
+- `users.{username}.status` - Status updates
+
+## Awtrix Configuration
+
+Configure your Awtrix clock to connect to RabbitMQ:
+
+- **Broker**: Your server IP
+- **Port**: 1883 (MQTT)
+- **Username**: Your RabbitMQ username
+- **Password**: Your RabbitMQ password
+- **Topic**: `users.{your-username}.github-contributions`
+
+## Database Schema
+
+### Users
+- Auth.js user data (name, email, image)
+- GitHub integration data (for GitHub users)
+- RabbitMQ credentials
+- Session management
+
+### Accounts (Auth.js)
+- OAuth provider accounts
+- Access tokens and refresh tokens
+
+### Sessions (Auth.js)
+- User session management
+- Session expiration
+
+### Contributions
+- Daily contribution counts
+- Yearly aggregation
+- Cached GitHub data
+
+### RabbitMQ Messages
+- Message history
+- Topic tracking
+- Timestamp logging
+
+## Development
+
+### Available Scripts
+
+```bash
+# Database
+npm run db:generate    # Generate Prisma client
+npm run db:push        # Push schema to database
+npm run db:migrate     # Run migrations
+npm run db:studio      # Open Prisma Studio
+npm run db:seed        # Seed database
+
+# RabbitMQ
+npm run rabbitmq:setup # Setup RabbitMQ users
+```
+
+### Adding New Users
+
+1. **Create OAuth Apps** (Google and/or GitHub) and get credentials
+2. **Users sign in** through the web interface
+3. **Create RabbitMQ user** with proper permissions
+4. **Configure Awtrix clock** with user credentials
+
+## Security
+
+- **Authentication**: Auth.js v5 with OAuth providers
+- **Authorization**: User-specific topic access
+- **Data Encryption**: Sensitive data encrypted in database
+- **Network Security**: Docker network isolation
+- **Session Security**: Database-stored sessions with expiration
+
+## Monitoring
+
+- **RabbitMQ Management UI**: Monitor queues, exchanges, and connections
+- **pgAdmin**: Database monitoring and management
+- **Application Logs**: Next.js development logs
+- **Prisma Studio**: Database visualization and editing
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Database Connection**: Ensure PostgreSQL container is running
+2. **RabbitMQ Connection**: Check RabbitMQ container and credentials
+3. **OAuth Configuration**: Verify Google and GitHub OAuth app settings
+4. **GitHub API Limits**: Monitor API rate limits
+5. **MQTT Connection**: Verify Awtrix clock configuration
+
+### Logs
+
+```bash
+# View container logs
+docker-compose logs postgres
+docker-compose logs rabbitmq
+
+# View application logs
+npm run dev
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+MIT License - see LICENSE file for details.

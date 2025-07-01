@@ -1,0 +1,46 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: indie-clock-postgres
+    environment:
+      POSTGRES_DB: indie_clock
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - indie-clock-network
+
+  # RabbitMQ with Management Plugin
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: indie-clock-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin_password
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI port
+      - "1883:1883"   # MQTT port (RabbitMQ MQTT plugin)
+      - "8883:8883"   # MQTT over SSL
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    restart: unless-stopped
+    networks:
+      - indie-clock-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  indie-clock-network:
+    driver: bridge 
