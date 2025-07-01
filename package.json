@@ -13,6 +13,9 @@
     "db:studio": "dotenv -e .env.local prisma studio",
     "db:seed": "dotenv -e .env.local tsx prisma/seed.ts",
     "rabbitmq:setup": "dotenv -e .env.local tsx scripts/setup-rabbitmq.ts",
+    "rabbitmq:monitor": "node scripts/monitor-queue.js",
+    "rabbitmq:messages": "dotenv -e .env.local node scripts/view-messages.js",
+    "rabbitmq:cleanup": "dotenv -e .env.local node scripts/cleanup-messages.js",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f"
