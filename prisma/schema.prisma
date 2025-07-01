@@ -45,6 +45,7 @@ model User {
   accounts            Account[]
   contributions       Contribution[]
   rabbitmqMessages    RabbitMQMessage[]
+  devices             Device[]
 
   @@map("users")
 }
@@ -79,4 +80,17 @@ model RabbitMQMessage {
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("rabbitmq_messages")
+}
+
+model Device {
+  id               String   @id @default(cuid())
+  userId           String
+  name             String?
+  rabbitmqUsername String   @unique
+  rabbitmqPassword String
+  topicPrefix      String
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("devices")
 }

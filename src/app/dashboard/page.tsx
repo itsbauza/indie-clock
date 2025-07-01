@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import GitHubContributions from "@/components/GitHubContributions"
 import PersonalAccessTokenInput from "@/components/PersonalAccessTokenInput"
+import DeviceRegistrationCard from "@/components/DeviceRegistrationCard"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -174,6 +175,9 @@ export default function Dashboard() {
               />
             )}
           </div>
+
+          {/* Device Registration */}
+          <DeviceRegistrationCard />
 
           {/* Recent Activity */}
           <div className="bg-white rounded-lg shadow-sm p-6">

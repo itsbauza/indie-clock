@@ -160,6 +160,53 @@ class RabbitMQService {
     }
   }
 
+  /**
+   * Programmatically create a RabbitMQ user and set topic permissions for AWTRIX device isolation.
+   * @param username The RabbitMQ username to create
+   * @param password The password for the user
+   * @param prefix The topic prefix (e.g., awtrix_<userId>_<deviceId>)
+   */
+  public async createRabbitMQUserAndPermissions(username: string, password: string, prefix: string) {
+    const RABBITMQ_API = process.env.RABBITMQ_API || 'http://localhost:15672/api';
+    const ADMIN_USER = process.env.RABBITMQ_ADMIN_USER || 'admin';
+    const ADMIN_PASS = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+    try {
+      // 1. Create the user
+      const userRes = await fetch(
+        `${RABBITMQ_API}/users/${username}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + Buffer.from(`${ADMIN_USER}:${ADMIN_PASS}`).toString('base64'),
+          },
+          body: JSON.stringify({ password, tags: '' }),
+        }
+      );
+      if (!userRes.ok) throw new Error('Failed to create RabbitMQ user');
+      // 2. Set permissions for the user (default vhost is "/")
+      const regex = `^${prefix}\\..*`;
+      const permRes = await fetch(
+        `${RABBITMQ_API}/permissions/%2F/${username}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + Buffer.from(`${ADMIN_USER}:${ADMIN_PASS}`).toString('base64'),
+          },
+          body: JSON.stringify({ configure: regex, write: regex, read: regex }),
+        }
+      );
+      if (!permRes.ok) throw new Error('Failed to set RabbitMQ permissions');
+      // 3. Store credentials in DB (removed, now handled in Device table)
+      console.log(`RabbitMQ user and permissions created for: ${username}`);
+      return true;
+    } catch (error) {
+      console.error('Error creating RabbitMQ user and permissions:', error);
+      return false;
+    }
+  }
+
   public async disconnect() {
     if (this.channel) {
       await this.channel.close();
