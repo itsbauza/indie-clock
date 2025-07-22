@@ -134,19 +134,19 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
   const FRAME_PADDING = 0.5; // rem - white border thickness (p-2 = 0.5rem)
   const SCREEN_PADDING = 1.5; // rem - black screen padding (p-6 = 1.5rem, p-8 = 2rem)
 
-  // Get color based on contribution count (GitHub's actual colors)
+  // Get color based on contribution count (adjusted for blue-green tone)
   const getColor = (count: number) => {
     if (count === 0) return 'bg-[#161b22]';
-    if (count <= 3) return 'bg-[#0e4429]';
-    if (count <= 6) return 'bg-[#006d32]';
-    if (count <= 9) return 'bg-[#26a641]';
-    return 'bg-[#39d353]';
+    if (count <= 3) return 'bg-[#0e3a2a]';
+    if (count <= 6) return 'bg-[#005a3a]';
+    if (count <= 9) return 'bg-[#1a7a4a]';
+    return 'bg-[#2a9a5a]';
   };
 
   return (
     <div className="mt-6 flex flex-col items-center">
       {/* Header Info */}
-              <div className="mb-4 text-center">
+        <div className="mb-4 text-center">
           <div className="flex items-center justify-center space-x-3 mb-2">
             {hasPrivateAccess !== null && (
               <div>
@@ -274,10 +274,10 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
           <span className="text-xs text-[#8b949e] mr-2">Less</span>
           <div className="flex space-x-1">
             <div className="w-[11px] h-[11px] bg-[#161b22]"></div>
-            <div className="w-[11px] h-[11px] bg-[#0e4429]"></div>
-            <div className="w-[11px] h-[11px] bg-[#006d32]"></div>
-            <div className="w-[11px] h-[11px] bg-[#26a641]"></div>
-            <div className="w-[11px] h-[11px] bg-[#39d353]"></div>
+            <div className="w-[11px] h-[11px] bg-[#0e3a2a]"></div>
+            <div className="w-[11px] h-[11px] bg-[#005a3a]"></div>
+            <div className="w-[11px] h-[11px] bg-[#1a7a4a]"></div>
+            <div className="w-[11px] h-[11px] bg-[#2a9a5a]"></div>
           </div>
           <span className="text-xs text-[#8b949e] ml-2">More</span>
         </div>
