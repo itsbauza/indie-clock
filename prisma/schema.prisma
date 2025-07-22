@@ -37,13 +37,11 @@ model User {
   tokenExpiresAt      DateTime?
   rabbitmqUsername    String?           @unique
   rabbitmqPassword    String?
-  lastSyncAt          DateTime?
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
   patUpdatedAt        DateTime?
   personalAccessToken String?
   accounts            Account[]
-  contributions       Contribution[]
   rabbitmqMessages    RabbitMQMessage[]
   devices             Device[]
 
@@ -57,18 +55,6 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
-}
-
-model Contribution {
-  id     String   @id @default(cuid())
-  userId String
-  date   DateTime
-  count  Int
-  year   Int
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, date])
-  @@map("contributions")
 }
 
 model RabbitMQMessage {

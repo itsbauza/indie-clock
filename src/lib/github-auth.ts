@@ -67,6 +67,7 @@ export async function fetchGitHubContributions(accessToken: string, username: st
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "User-Agent": "IndieClock-App",
       "Authorization": `Bearer ${accessToken}`
     },
     body: JSON.stringify({

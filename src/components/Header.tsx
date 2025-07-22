@@ -49,9 +49,6 @@ export default function Header() {
                 Dashboard
               </Link>
             )}
-            <Link href="/about" className="text-gray-700 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">
-              About
-            </Link>
           </nav>
 
           {/* User Menu */}

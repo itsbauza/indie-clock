@@ -84,59 +84,20 @@ export default function Home() {
         </div>
       </div>
 
-      {/* User Dashboard Section */}
-      {session ? (
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <div className="text-center mb-8">
-            <div className="mb-4">
-              {session.user?.image && (
-                <Image
-                  src={session.user.image}
-                  alt={`${session.user.name || session.user.email}'s avatar`}
-                  width={80}
-                  height={80}
-                  className="rounded-full mx-auto mb-4"
-                />
-              )}
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                Welcome back, {session.user?.name || session.user?.email}!
-              </h2>
-              <p className="text-gray-600">Here's your GitHub contribution overview</p>
-            </div>
-          </div>
-          
-          {/* Show GitHub contributions if user authenticated with GitHub */}
-          {session?.user?.email && (
-            <GitHubContributions 
-              username={session.user.email.split('@')[0]} // Fallback username
-            />
-          )}
-          
-          <div className="mt-8 text-center">
-            <Link
-              href="/dashboard"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md font-medium transition-colors"
-            >
-              Go to Dashboard
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="text-center bg-white rounded-lg shadow-sm p-8">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
-            Ready to get started?
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Sign in with your GitHub or Google account to start tracking your contributions.
-          </p>
-          <Link
-            href="/auth/signin"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
-          >
-            Sign In Now
-          </Link>
-        </div>
-      )}
+      <div className="text-center bg-white rounded-lg shadow-sm p-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          Ready to get started?
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Sign in with your GitHub or Google account to start tracking your contributions.
+        </p>
+        <Link
+          href="/auth/signin"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors"
+        >
+          Sign In Now
+        </Link>
+      </div>
     </div>
   );
 }

@@ -6,12 +6,13 @@ async function monitorQueue() {
     const connection = await amqp.connect('amqp://admin:admin_password@localhost:5672');
     const channel = await connection.createChannel();
     
-    console.log('🔍 Connected to RabbitMQ. Monitoring all user topics...\n');
+    console.log('🔍 Connected to RabbitMQ. Monitoring all relevant topics...\n');
     
-    // Monitor all user topics
+    // Monitor all relevant topics
     const topics = [
-      'users.#.github-contributions',
-      'users.#.status'
+      'users.#',                    // All user topics (current system)
+      'awtrix.#',                   // All AWTRIX device topics
+      'awtrix_cmck90f8300ke1nu9vz4phiam_36a6444f3667.#',  // Your specific device (no users. prefix)
     ];
     
     for (const topic of topics) {
@@ -42,6 +43,10 @@ async function monitorQueue() {
     }
     
     console.log('\n✅ Monitoring active. Press Ctrl+C to stop.\n');
+    console.log('💡 To trigger messages, try:');
+    console.log('   - Visit /dashboard and sync GitHub data');
+    console.log('   - Use the simulator test button');
+    console.log('   - Check /api/github/contributions endpoint\n');
     
     // Keep the connection alive
     process.on('SIGINT', async () => {

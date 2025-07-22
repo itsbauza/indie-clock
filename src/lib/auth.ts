@@ -17,6 +17,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, user, token }) {
       if (session.user) {
         session.user.id = user?.id || token?.sub || '';
+        session.user.username = user?.username || (token?.username as string) || null;
       }
       return session
     },
@@ -43,6 +44,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
           });
           token.sub = existingUser.id;
+          token.username = (profile as any).login || null;
         } else {
           // Create new user with GitHub data
           const newUser = await prisma.user.create({
@@ -55,6 +57,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
           });
           token.sub = newUser.id;
+          token.username = (profile as any).login || null;
         }
       }
       // No manual refresh logic needed; Auth.js handles it

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import { GitHubService } from '@/lib/github-service';
 import { mqttService } from '@/lib/mqtt-service';
-import { prisma } from '@/lib/prisma';
-import { auth } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   const session = await auth();
   
   if (!session?.user) {
@@ -15,12 +15,24 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Find user in database using session user ID
+    const { username } = await request.json();
+    // Use the GitHub username from session if available, otherwise fall back to request body or email prefix
+    const targetUsername = username || session.user.username || session.user.email?.split('@')[0];
+
+    if (!targetUsername) {
+      return NextResponse.json(
+        { error: 'Username is required' },
+        { status: 400 }
+      );
+    }
+
+    // Find user in database
     const user = await prisma.user.findFirst({
       where: { 
         OR: [
           { id: session.user.id },
           { email: session.user.email },
+          { username: targetUsername },
         ]
       }
     });
@@ -32,27 +44,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const username = user.username;
-    if (!username) {
-      return NextResponse.json(
-        { error: 'No username associated with this account' },
-        { status: 400 }
-      );
-    }
-
+    // Fetch fresh data from GitHub API
     let contributionsData;
     let hasPrivateAccess = false;
 
-    // Always fetch fresh data from GitHub API
     if (user.personalAccessToken) {
-      // Use personal access token to fetch fresh data from GitHub (includes private contributions)
+      // Use personal access token for private contributions
       contributionsData = await GitHubService.fetchGitHubContributionsWithUserToken(
-        username,
+        targetUsername,
         user.personalAccessToken
       );
       hasPrivateAccess = true;
     } else {
-      // Try to get GitHub App token from Account model
+      // Try GitHub App token
       const account = await prisma.account.findFirst({
         where: {
           userId: user.id,
@@ -61,35 +65,35 @@ export async function GET(request: NextRequest) {
       });
       
       if (account?.access_token) {
-        // Use GitHub App token (public contributions only)
         contributionsData = await GitHubService.fetchGitHubContributionsWithUserToken(
-          username,
+          targetUsername,
           account.access_token
         );
         hasPrivateAccess = false;
       } else {
         return NextResponse.json(
-          { error: 'No access token found. Please sign in again with GitHub or provide a Personal Access Token for private contributions.' },
+          { error: 'No access token found' },
           { status: 401 }
         );
       }
     }
-    
-    // Publish to MQTT for the Awtrix3 custom app
-    mqttService.publishAwtrix3CustomApp(username, contributionsData);
-    
+
+    // Publish to Awtrix3 custom app via MQTT
+    mqttService.publishAwtrix3CustomApp(targetUsername, contributionsData);
+
     return NextResponse.json({
       success: true,
       data: contributionsData,
-      hasPrivateAccess
+      hasPrivateAccess,
+      message: 'Data fetched and published to Awtrix3 custom app'
     });
 
   } catch (error) {
-    console.error('Error fetching GitHub contributions:', error);
-        
+    console.error('Error syncing Awtrix3 custom app:', error);
+    
     return NextResponse.json(
       { 
-        error: 'Failed to fetch contributions',
+        error: 'Failed to sync data',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

@@ -7,6 +7,7 @@ import Image from "next/image"
 import GitHubContributions from "@/components/GitHubContributions"
 import PersonalAccessTokenInput from "@/components/PersonalAccessTokenInput"
 import DeviceRegistrationCard from "@/components/DeviceRegistrationCard"
+import NotificationButton from "@/components/NotificationButton"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -121,14 +122,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg shadow-sm p-6 mt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <button className="w-full text-left p-3 rounded-md border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  <span className="text-gray-700">Sync GitHub Data</span>
-                </div>
-              </button>
+              <NotificationButton />
               
               <button className="w-full text-left p-3 rounded-md border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
                 <div className="flex items-center">
@@ -164,9 +158,35 @@ export default function Dashboard() {
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-gray-900">GitHub Contributions</h3>
-              <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                View Full History
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/awtrix3/sync', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                          username: session.user?.username 
+                        })
+                      });
+                      if (response.ok) {
+                        alert('Data synced to Awtrix3 custom app!');
+                      } else {
+                        alert('Failed to sync data');
+                      }
+                    } catch (error) {
+                      console.error('Error syncing to Awtrix3:', error);
+                      alert('Error syncing data');
+                    }
+                  }}
+                  className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                >
+                  Sync to Awtrix3
+                </button>
+                <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                  View Full History
+                </button>
+              </div>
             </div>
             
             {session.user?.email && (
@@ -179,35 +199,6 @@ export default function Dashboard() {
           {/* Device Registration */}
           <DeviceRegistrationCard />
 
-          {/* Recent Activity */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h3>
-            <div className="space-y-4">
-              <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-4"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">GitHub data synced</p>
-                  <p className="text-xs text-gray-500">2 hours ago</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full mr-4"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">Account connected</p>
-                  <p className="text-xs text-gray-500">1 day ago</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full mr-4"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">Welcome to Indie Clock</p>
-                  <p className="text-xs text-gray-500">1 day ago</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,66 +1,89 @@
-const { PrismaClient } = require('@prisma/client');
+#!/usr/bin/env node
 
-const prisma = new PrismaClient();
+const mqtt = require('mqtt');
 
-async function viewMessages() {
+console.log('📱 MQTT Message Viewer');
+console.log('======================\n');
+
+// Connect to MQTT broker
+const client = mqtt.connect('mqtt://localhost:1883', {
+  username: 'backend',
+  password: 'backend_password',
+  clientId: `viewer-${Date.now()}`,
+  clean: true
+});
+
+client.on('connect', () => {
+  console.log('✅ Connected to MQTT broker\n');
+  
+  // Subscribe to all relevant topics
+  const topics = [
+    'users/+/+',
+    'awtrix_+/+'
+  ];
+  
+  topics.forEach(topic => {
+    client.subscribe(topic, { qos: 0 });
+  });
+  
+  console.log('📡 Listening for messages...');
+  console.log('💡 Send messages using: npm run mqtt:test');
+  console.log('💡 Or visit: http://localhost:3000/simulator');
+  console.log('💡 Press Ctrl+C to stop\n');
+  console.log('─'.repeat(60));
+});
+
+client.on('message', (topic, message) => {
+  const timestamp = new Date().toLocaleTimeString();
+  
   try {
-    console.log('📊 Fetching RabbitMQ messages from database...\n');
+    const data = JSON.parse(message.toString());
     
-    // Get all messages with user information
-    const messages = await prisma.rabbitMQMessage.findMany({
-      include: {
-        user: {
-          select: {
-            username: true,
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: {
-        sentAt: 'desc'
-      },
-      take: 50 // Limit to last 50 messages
-    });
-    
-    if (messages.length === 0) {
-      console.log('📭 No messages found in database.');
-      return;
+    // Format based on message type
+    if (data.text) {
+      // AWTRIX display message
+      console.log(`\n🕐 ${timestamp}`);
+      console.log(`📤 ${topic}`);
+      console.log(`📱 Display: "${data.text}"`);
+      if (data.color) console.log(`🎨 Color: ${data.color}`);
+      if (data.duration) console.log(`⏱️  Duration: ${data.duration}s`);
+      if (data.effect) console.log(`✨ Effect: ${data.effect}`);
+      if (data.topText) console.log(`📝 Top: ${data.topText}`);
+      if (data.bottomText) console.log(`📝 Bottom: ${data.bottomText}`);
+      if (data.progress !== undefined) console.log(`📊 Progress: ${data.progress}%`);
+    } else if (data.status) {
+      // Status message
+      console.log(`\n🕐 ${timestamp}`);
+      console.log(`📤 ${topic}`);
+      console.log(`📊 Status: ${data.status}`);
+      if (data.timestamp) console.log(`⏰ Time: ${new Date(data.timestamp).toLocaleString()}`);
+    } else {
+      // Generic message
+      console.log(`\n🕐 ${timestamp}`);
+      console.log(`📤 ${topic}`);
+      console.log(`📦 Data:`, JSON.stringify(data, null, 2));
     }
-    
-    console.log(`📋 Found ${messages.length} recent messages:\n`);
-    
-    messages.forEach((message, index) => {
-      console.log(`${index + 1}. 📤 Topic: ${message.topic}`);
-      console.log(`   👤 User: ${message.user?.username || 'Unknown'} (${message.user?.name || 'N/A'})`);
-      console.log(`   🕐 Sent: ${message.sentAt.toLocaleString()}`);
-      console.log(`   📦 Message:`, JSON.stringify(message.message, null, 4));
-      console.log('─'.repeat(80));
-    });
-    
-    // Show summary by topic
-    const topicSummary = await prisma.rabbitMQMessage.groupBy({
-      by: ['topic'],
-      _count: {
-        topic: true
-      },
-      orderBy: {
-        _count: {
-          topic: 'desc'
-        }
-      }
-    });
-    
-    console.log('\n📈 Message Summary by Topic:');
-    topicSummary.forEach(summary => {
-      console.log(`   ${summary.topic}: ${summary._count.topic} messages`);
-    });
-    
   } catch (error) {
-    console.error('❌ Error fetching messages:', error);
-  } finally {
-    await prisma.$disconnect();
+    // Raw message
+    console.log(`\n🕐 ${timestamp}`);
+    console.log(`📤 ${topic}`);
+    console.log(`📦 Raw: ${message.toString()}`);
   }
-}
+  
+  console.log('─'.repeat(60));
+});
 
-viewMessages(); 
+client.on('error', (error) => {
+  console.error('❌ Error:', error.message);
+});
+
+client.on('close', () => {
+  console.log('\n🔌 Connection closed');
+});
+
+// Handle Ctrl+C
+process.on('SIGINT', () => {
+  console.log('\n🛑 Stopping message viewer...');
+  client.end();
+  process.exit(0);
+}); 

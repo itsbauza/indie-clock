@@ -1,0 +1,22 @@
+meta {
+  name: Notify
+  type: http
+  seq: 5
+}
+
+post {
+  url: 10.7.1.148/api/custom?name=github-contributions
+  body: json
+  auth: inherit
+}
+
+params:query {
+  name: github-contributions
+}
+
+body:json {
+  {
+    "text":"hellow from stripe!",
+    "rtttl": "scale_up:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
+  }
+}

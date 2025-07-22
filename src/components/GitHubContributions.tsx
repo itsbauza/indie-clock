@@ -10,21 +10,15 @@ interface GitHubContributionsProps {
 export default function GitHubContributions({ username }: GitHubContributionsProps) {
   const [contributions, setContributions] = useState<GitHubContributionsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastSync, setLastSync] = useState<Date | null>(null);
   const [hasPrivateAccess, setHasPrivateAccess] = useState<boolean | null>(null);
 
-  const fetchContributions = async (sync = false) => {
+  const fetchContributions = async () => {
     try {
-      if (sync) {
-        setSyncing(true);
-      } else {
-        setLoading(true);
-      }
+      setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/github/contributions`);
+      const response = await fetch('/api/github/contributions');
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -33,19 +27,13 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
       
       const result = await response.json();
       setContributions(result.data);
-      setLastSync(result.lastSync ? new Date(result.lastSync) : null);
       setHasPrivateAccess(result.hasPrivateAccess || false);
     } catch (err) {
       console.error('Error fetching contributions:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch contributions');
     } finally {
       setLoading(false);
-      setSyncing(false);
     }
-  };
-
-  const handleSync = () => {
-    fetchContributions(true);
   };
 
   useEffect(() => {
@@ -133,11 +121,6 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Your GitHub Contributions</h3>
           <p className="text-gray-600 text-sm">
             Total contributions: <span className="font-medium">{contributions.totalContributions}</span>
-            {lastSync && (
-              <span className="ml-4 text-gray-500">
-                Last synced: {lastSync.toLocaleDateString()} {lastSync.toLocaleTimeString()}
-              </span>
-            )}
           </p>
           {hasPrivateAccess !== null && (
             <div className="mt-2">
@@ -153,24 +136,6 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
             </div>
           )}
         </div>
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className={`px-3 py-1 text-sm rounded transition-colors ${
-            syncing
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-        >
-          {syncing ? (
-            <div className="flex items-center">
-              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
-              Syncing...
-            </div>
-          ) : (
-            'Sync'
-          )}
-        </button>
       </div>
       <div className="flex items-start">
         {/* Day labels */}

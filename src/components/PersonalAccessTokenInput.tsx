@@ -43,7 +43,7 @@ export default function PersonalAccessTokenInput({ onTokenSubmit, isLoading = fa
                 <li>Go to <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline">GitHub Settings → Developer settings → Personal access tokens</a></li>
                 <li>Click "Generate new token (classic)"</li>
                 <li>Give it a name like "IndieClock Private Contributions"</li>
-                <li>Select scopes: <code className="bg-yellow-100 px-1 rounded">read:user</code> and <code className="bg-yellow-100 px-1 rounded">user:email</code></li>
+                <li>Select scopes: <code className="bg-yellow-100 px-1 rounded">repo</code> (for private contributions), <code className="bg-yellow-100 px-1 rounded">read:user</code>, and <code className="bg-yellow-100 px-1 rounded">user:email</code></li>
                 <li>Click "Generate token" and copy the token</li>
               </ol>
               <button

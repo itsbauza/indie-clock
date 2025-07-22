@@ -111,12 +111,11 @@ npm run dev
 ### GitHub Contributions
 
 ```
-GET /api/github/contributions?username=<username>&sync=true
+GET /api/github/contributions?username=<username>
 ```
 
 Parameters:
 - `username`: GitHub username (optional, defaults to authenticated user)
-- `sync`: Force sync with GitHub (optional)
 
 Response:
 ```json
@@ -126,10 +125,11 @@ Response:
     "totalContributions": 1234,
     "contributions": [...]
   },
-  "lastSync": "2024-01-01T00:00:00Z",
-  "synced": true
+  "hasPrivateAccess": true
 }
 ```
+
+**Note**: This endpoint always fetches fresh data from the GitHub API. No caching is performed.
 
 ## Authentication
 
@@ -177,15 +177,15 @@ Configure your Awtrix clock to connect to RabbitMQ:
 - User session management
 - Session expiration
 
-### Contributions
-- Daily contribution counts
-- Yearly aggregation
-- Cached GitHub data
-
 ### RabbitMQ Messages
 - Message history
 - Topic tracking
 - Timestamp logging
+
+### Devices
+- User device configurations
+- MQTT topic prefixes
+- Device-specific credentials
 
 ## Development
 

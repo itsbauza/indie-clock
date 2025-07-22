@@ -27,9 +27,9 @@
     {
       "user": "backend",
       "vhost": "/",
-      "configure": "amq\\.topic|users\\..*",
-      "write": "amq\\.topic|users\\..*",
-      "read": "amq\\.topic|users\\..*"
+      "configure": "amq\\.topic|users\\..*|awtrix.*|mqtt-subscription-.*",
+      "write": "amq\\.topic|users\\..*|awtrix.*|mqtt-subscription-.*",
+      "read": "amq\\.topic|users\\..*|awtrix.*|mqtt-subscription-.*"
     }
   ],
   "exchanges": [
@@ -44,5 +44,19 @@
     }
   ],
   "queues": [],
-  "bindings": []
+  "bindings": [],
+  "policies": [
+    {
+      "vhost": "/",
+      "name": "mqtt-messages-ttl",
+      "pattern": "^(users|awtrix)\\.",
+      "apply-to": "queues",
+      "definition": {
+        "message-ttl": 3600000,
+        "max-length": 1000,
+        "overflow": "reject-publish"
+      },
+      "priority": 0
+    }
+  ]
 } 

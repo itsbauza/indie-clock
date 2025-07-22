@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { fetchGitHubContributions } from '@/lib/github-auth';
-import { encrypt, decrypt } from '@/lib/encryption';
+import { GitHubService } from '@/lib/github-service';
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -72,50 +71,14 @@ export async function POST(request: NextRequest) {
         throw new Error(`Invalid token: ${data.errors[0]?.message || 'Unknown error'}`);
       }
 
-      // Token is valid, encrypt and update user record
-      const encryptedToken = encrypt(personalAccessToken);
+      // Token is valid, store as plain text
       await prisma.user.update({
         where: { id: user.id },
         data: {
-          personalAccessToken: encryptedToken,
+          personalAccessToken: personalAccessToken,
           patUpdatedAt: new Date()
         }
       });
-
-      // Fetch and sync contributions with the new token
-      const username = user.username || session.user.email?.split('@')[0];
-      if (username) {
-        const contributionsData = await fetchGitHubContributions(personalAccessToken, username);
-        
-        // Get current year
-        const currentYear = new Date().getFullYear();
-        
-        // Delete existing contributions for current year
-        await prisma.contribution.deleteMany({
-          where: {
-            userId: user.id,
-            year: currentYear
-          }
-        });
-
-        // Insert new contributions
-        const contributions = contributionsData.contributions.map(contribution => ({
-          userId: user.id,
-          date: new Date(contribution.date),
-          count: contribution.contributionCount,
-          year: currentYear
-        }));
-
-        await prisma.contribution.createMany({
-          data: contributions
-        });
-
-        // Update user's last sync time
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastSyncAt: new Date() }
-        });
-      }
 
       return NextResponse.json({
         success: true,

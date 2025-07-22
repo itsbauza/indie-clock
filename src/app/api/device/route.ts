@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
-import { rabbitmqService } from '../../../lib/rabbitmq-service';
+import { mqttService } from '../../../lib/mqtt-service';
 import { auth } from '../../../lib/auth';
 import crypto from 'crypto';
 
@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
     const rabbitmqUsername = `awtrix_${user.id}_${deviceId}`;
     const rabbitmqPassword = crypto.randomBytes(16).toString('hex');
 
-    // Create RabbitMQ user and permissions
-    const ok = await rabbitmqService.createRabbitMQUserAndPermissions(rabbitmqUsername, rabbitmqPassword, prefix);
+    // Create MQTT user and permissions
+    const ok = await mqttService.createRabbitMQUserAndPermissions(rabbitmqUsername, rabbitmqPassword, prefix);
     if (!ok) return NextResponse.json({ error: 'Failed to create device credentials' }, { status: 500 });
 
     // Store device in DB
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       rabbitmqUsername,
       rabbitmqPassword,
       topicPrefix: prefix,
-      broker: process.env.RABBITMQ_BROKER_URL || 'mqtt://your-broker-host:1883',
+      broker: process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883',
       port: 1883,
     });
   } catch (error) {
@@ -72,11 +72,62 @@ export async function PUT(req: NextRequest) {
   try {
     const user = await getUserFromRequest();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const { deviceId, name } = await req.json();
+    const { deviceId, name, updatePermissions } = await req.json();
     const device = await prisma.device.findFirst({ where: { id: deviceId, userId: user.id } });
     if (!device) return NextResponse.json({ error: 'Device not found' }, { status: 404 });
-    await prisma.device.update({ where: { id: deviceId }, data: { name } });
+    
+    // Update device name if provided
+    if (name !== undefined) {
+      await prisma.device.update({ where: { id: deviceId }, data: { name } });
+    }
+    
+    // Update MQTT permissions if requested
+    if (updatePermissions) {
+      const permissionsUpdated = await mqttService.updateRabbitMQUserPermissions(device.rabbitmqUsername, device.topicPrefix);
+      return NextResponse.json({ success: true, permissionsUpdated });
+    }
+    
     return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const user = await getUserFromRequest();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const deviceId = searchParams.get('deviceId');
+
+    if (!deviceId) {
+      return NextResponse.json({ error: 'Device ID is required' }, { status: 400 });
+    }
+
+    // Find the device and ensure it belongs to the user
+    const device = await prisma.device.findFirst({
+      where: { id: deviceId, userId: user.id }
+    });
+
+    if (!device) {
+      return NextResponse.json({ error: 'Device not found' }, { status: 404 });
+    }
+
+    // Delete the MQTT user and permissions
+    const mqttDeleted = await mqttService.deleteRabbitMQUserAndPermissions(device.rabbitmqUsername);
+    
+    // Delete the device from database
+    await prisma.device.delete({
+      where: { id: deviceId }
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      mqttUserDeleted: mqttDeleted,
+      message: 'Device deleted successfully'
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
