@@ -72,8 +72,6 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_ADMIN_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASSWORD}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
-      # Enable plugins via environment variable instead of file mount
-      RABBITMQ_ENABLED_PLUGINS: "rabbitmq_management,rabbitmq_mqtt"
       # RabbitMQ configuration environment variables
       RABBITMQ_ADMIN_USER: ${RABBITMQ_ADMIN_USER}
       RABBITMQ_ADMIN_PASSWORD: ${RABBITMQ_ADMIN_PASSWORD}
@@ -91,6 +89,12 @@ services:
       - "8883:8883"   # MQTT over SSL
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_enabled_plugins:/etc/rabbitmq/enabled_plugins
+    command: >
+      sh -c "
+        echo '[rabbitmq_management,rabbitmq_mqtt].' > /etc/rabbitmq/enabled_plugins &&
+        rabbitmq-server
+      "
 
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
@@ -104,6 +108,7 @@ services:
 volumes:
   postgres_data:
   rabbitmq_data:
+  rabbitmq_enabled_plugins:
 
 networks:
   indie-clock-network:

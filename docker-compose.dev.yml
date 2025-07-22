@@ -27,8 +27,6 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
-      # Enable plugins via environment variable instead of file mount
-      RABBITMQ_ENABLED_PLUGINS: "rabbitmq_management,rabbitmq_mqtt"
       # MQTT configuration
       RABBITMQ_MQTT_LISTENERS_TCP_DEFAULT: 1883
       RABBITMQ_MQTT_ALLOW_ANONYMOUS: false
@@ -42,6 +40,12 @@ services:
       # - "15675:15675" # MQTT over WebSockets (disabled - requires SSL)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_enabled_plugins:/etc/rabbitmq/enabled_plugins
+    command: >
+      sh -c "
+        echo '[rabbitmq_management,rabbitmq_mqtt].' > /etc/rabbitmq/enabled_plugins &&
+        rabbitmq-server
+      "
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
@@ -55,6 +59,7 @@ services:
 volumes:
   postgres_data:
   rabbitmq_data:
+  rabbitmq_enabled_plugins:
 
 networks:
   indie-clock-network:
