@@ -73,7 +73,7 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASSWORD}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
       # Specify writable path for enabled plugins file to avoid permission issues
-      RABBITMQ_ENABLED_PLUGINS_FILE: /var/lib/rabbitmq/enabled_plugins
+      RABBITMQ_ENABLED_PLUGINS_FILE: /var/lib/rabbitmq/enabled_plugins.conf
       # List of plugins to enable (management is already enabled in this image, but keep explicit)
       # Enable plugins via environment variable
       RABBITMQ_ENABLED_PLUGINS: "rabbitmq_management,rabbitmq_management_agent,rabbitmq_mqtt"
