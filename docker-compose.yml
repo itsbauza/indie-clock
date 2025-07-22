@@ -3,10 +3,12 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: indie-clock-postgres
+    env_file:
+      - .env.local
     environment:
-      POSTGRES_DB: indie_clock
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
@@ -20,10 +22,13 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: indie-clock-rabbitmq
+    env_file:
+      - .env.local
+      - .env
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin_password
-      RABBITMQ_DEFAULT_VHOST: /
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
       # Enable plugins on startup
       RABBITMQ_ENABLED_PLUGINS_FILE: /etc/rabbitmq/enabled_plugins
     ports:
