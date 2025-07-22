@@ -75,6 +75,9 @@ GITHUB_CLIENT_SECRET="your-github-client-secret"
 # RabbitMQ Configuration
 RABBITMQ_URL=amqp://backend:backend_password@localhost:5672
 RABBITMQ_ADMIN_URL=http://admin:admin_password@localhost:15672
+
+# Cron Job Configuration (for hourly GitHub sync)
+CRON_SECRET_TOKEN="your-secure-cron-token-here"
 ```
 
 ### 4. OAuth Setup
@@ -130,6 +133,23 @@ Response:
 ```
 
 **Note**: This endpoint always fetches fresh data from the GitHub API. No caching is performed.
+
+### Cron Job - Hourly GitHub Sync
+
+```
+POST /api/cron/github-sync
+```
+
+Headers:
+- `Authorization: Bearer <CRON_SECRET_TOKEN>`
+- `Content-Type: application/json`
+
+This endpoint is designed to be called by a cron job every hour to:
+- Fetch GitHub contributions for all users with GitHub accounts
+- Send updated data to all user devices via MQTT
+- Log results and errors for monitoring
+
+**Note**: This endpoint requires the `CRON_SECRET_TOKEN` environment variable for security.
 
 ## Authentication
 
@@ -201,6 +221,11 @@ npm run db:seed        # Seed database
 
 # RabbitMQ
 npm run rabbitmq:setup # Setup RabbitMQ users
+
+# Cron Job Management
+node scripts/setup-cron.js      # Setup hourly GitHub sync cron job
+node scripts/monitor-cron.js    # Monitor cron job status and health
+node scripts/manual-github-sync.js  # Manually trigger GitHub sync
 ```
 
 ### Adding New Users
@@ -209,6 +234,40 @@ npm run rabbitmq:setup # Setup RabbitMQ users
 2. **Users sign in** through the web interface
 3. **Create RabbitMQ user** with proper permissions
 4. **Configure Awtrix clock** with user credentials
+
+### Setting Up Hourly GitHub Sync
+
+The application includes an automated hourly sync that fetches GitHub contributions for all users and sends updates to their devices:
+
+1. **Generate Cron Token**:
+   ```bash
+   node scripts/setup-cron.js
+   ```
+
+2. **Add Token to Environment**:
+   Add the generated `CRON_SECRET_TOKEN` to your `.env.local` file
+
+3. **Set Up Cron Job**:
+   Add the provided cron entry to your system's crontab:
+   ```bash
+   crontab -e
+   ```
+
+4. **Monitor the Job**:
+   ```bash
+   node scripts/monitor-cron.js
+   ```
+
+5. **Manual Testing**:
+   ```bash
+   node scripts/manual-github-sync.js
+   ```
+
+The cron job will:
+- Run every hour at the top of the hour
+- Fetch GitHub contributions for all users with GitHub accounts
+- Send updated data to all user devices via MQTT
+- Log results and errors for monitoring
 
 ## Security
 
