@@ -12,6 +12,7 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasPrivateAccess, setHasPrivateAccess] = useState<boolean | null>(null);
+  const [switchingApp, setSwitchingApp] = useState(false);
 
   const fetchContributions = async () => {
     try {
@@ -33,6 +34,33 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
       setError(err instanceof Error ? err.message : 'Failed to fetch contributions');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const switchToGitHubContributions = async () => {
+    try {
+      setSwitchingApp(true);
+      
+      const response = await fetch('/api/device/switch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ appName: 'github-contributions' }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to switch to GitHub contributions app');
+      }
+      
+      const result = await response.json();
+      console.log('Successfully switched to GitHub contributions app:', result.message);
+    } catch (err) {
+      console.error('Error switching to GitHub contributions app:', err);
+      setError(err instanceof Error ? err.message : 'Failed to switch to GitHub contributions app');
+    } finally {
+      setSwitchingApp(false);
     }
   };
 
@@ -131,7 +159,7 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
   const CELL_TOTAL = CELL_SIZE + CELL_GAP; // total space per cell
   
   // Device frame sizing - adjust these to make the frame smaller/larger
-  const FRAME_PADDING = 0.5; // rem - white border thickness (p-2 = 0.5rem)
+  const FRAME_PADDING = 0.25; // rem - white border thickness (p-2 = 0.5rem)
   const SCREEN_PADDING = 1.5; // rem - black screen padding (p-6 = 1.5rem, p-8 = 2rem)
 
   // Get color based on contribution count (adjusted for blue-green tone)
@@ -144,33 +172,37 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
   };
 
   return (
-    <div className="mt-6 flex flex-col items-center">
+    <div className="mt-4 flex flex-col items-center">
       {/* Header Info */}
         <div className="mb-4 text-center">
           <div className="flex items-center justify-center space-x-3 mb-2">
-            {hasPrivateAccess !== null && (
+            {hasPrivateAccess !== null && hasPrivateAccess && (
               <div>
-                {hasPrivateAccess ? (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#238636] text-[#f0f6fc]">
-                    🔒 Private repos included
-                  </span>
-                ) : (
-                  <div className="relative group">
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#8b949e] text-[#f0f6fc] cursor-help">
-                      📊 Public only
-                    </span>
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
-                      <p className="text-xs text-[#f0f6fc] text-center">
-                        Only public contributions are shown. To see private contributions, change your profile visibility in GitHub settings.
-                      </p>
-                      {/* Tooltip arrow */}
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#0d1117]"></div>
-                    </div>
-                  </div>
-                )}
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#238636] text-[#f0f6fc]">
+                  🔒 Private repos included
+                </span>
               </div>
             )}
+          </div>
+          
+          {/* Switch to GitHub Contributions App Button */}
+          <div className="mt-3">
+            <button
+              onClick={switchToGitHubContributions}
+              disabled={switchingApp}
+              className="inline-flex items-center px-4 py-2 bg-[#238636] text-[#f0f6fc] text-sm font-medium rounded-md hover:bg-[#2ea043] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {switchingApp ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f0f6fc] mr-2"></div>
+                  Switching...
+                </>
+              ) : (
+                <>
+                  📱 Switch to GitHub Contributions App
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -210,7 +242,7 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
 
                                  {/* Centered Device Frame */}
          <div 
-           className="bg-white rounded-2xl shadow-2xl shadow-gray-400/50"
+           className="bg-white border border-gray-200 rounded-2xl"
            style={{ padding: `${FRAME_PADDING}rem` }}
          >
            {/* Device Screen (Black Background) */}
@@ -282,6 +314,25 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
           <span className="text-xs text-[#8b949e] ml-2">More</span>
         </div>
       </div>
+
+      {/* Public only indicator - bottom left */}
+      {hasPrivateAccess !== null && !hasPrivateAccess && (
+        <div className="mt-4 flex justify-start w-full">
+          <div className="relative group">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#8b949e] text-[#f0f6fc] cursor-help">
+              📊 Public only
+            </span>
+            {/* Tooltip */}
+            <div className="absolute bottom-full left-0 mb-2 px-3 py-2 bg-[#0d1117] border border-[#30363d] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
+              <p className="text-xs text-[#f0f6fc] text-center">
+                Only public contributions are shown. To see private contributions, change your profile visibility in GitHub settings.
+              </p>
+              {/* Tooltip arrow */}
+              <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#0d1117]"></div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

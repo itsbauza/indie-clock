@@ -522,6 +522,72 @@ class MQTTService {
   }
 
   /**
+   * Switch to a specific app on all user's devices
+   * Uses the Awtrix3 switch topic: [PREFIX]/switch
+   */
+  public async switchToApp(username: string, appName: string): Promise<boolean> {
+    if (!this.isConnected || !this.client) {
+      console.error('MQTT not connected');
+      return false;
+    }
+    
+    try {
+      // Find user by username, email, or use the username as email prefix
+      const user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { githubUsername: username },
+            { email: username },
+            { email: { startsWith: username + '@' } }
+          ]
+        }
+      });
+      
+      if (!user) {
+        console.error('User not found for app switch. Username:', username);
+        return false;
+      }
+
+      const devices = await prisma.device.findMany({
+        where: { userId: user.id }
+      });
+
+      if (devices.length === 0) {
+        console.log('No devices found for user:', username);
+        return false;
+      }
+
+      let successCount = 0;
+      for (const device of devices) {
+        const baseTopic = device.topicPrefix.replace(/\./g, '/');
+        const switchTopic = `${baseTopic}/switch`;
+        
+        const switchMessage = {
+          name: appName
+        };
+        
+        this.client.publish(switchTopic, JSON.stringify(switchMessage), { qos: 1, retain: false });
+        console.log(`Published app switch to: ${switchTopic} with app: ${appName}`);
+        successCount++;
+
+        // Store in database for tracking
+        await prisma.rabbitMQMessage.create({
+          data: {
+            userId: user.id,
+            topic: switchTopic,
+            message: switchMessage as unknown as Prisma.JsonObject,
+          },
+        });
+      }
+
+      return successCount > 0;
+    } catch (error) {
+      console.error('Error switching to app:', error);
+      return false;
+    }
+  }
+
+  /**
    * Delete MQTT user and permissions for a device
    */
   public async deleteRabbitMQUserAndPermissions(username: string): Promise<boolean> {
