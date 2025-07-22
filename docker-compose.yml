@@ -1,24 +1,4 @@
 services:
-  # Database Migration Service
-  migration:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: indie-clock-migration
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - MQTT_URL=mqtt://rabbitmq:1883
-      - MQTT_USERNAME=${RABBITMQ_BACKEND_USER}
-      - MQTT_PASSWORD=${RABBITMQ_BACKEND_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - indie-clock-network
-    command: ["npx", "prisma", "migrate", "deploy"]
-    restart: "no"
-
   # Next.js Application
   app:
     build:
@@ -50,9 +30,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      migration:
-        condition: service_completed_successfully
-
+    command: ["sh", "-c", "npx prisma migrate deploy && node server.js"]
 
     networks:
       - indie-clock-network
