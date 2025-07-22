@@ -2,49 +2,21 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import Image from "next/image"
 import GitHubContributions from "@/components/GitHubContributions"
-import PersonalAccessTokenInput from "@/components/PersonalAccessTokenInput"
 import DeviceRegistrationCard from "@/components/DeviceRegistrationCard"
 import NotificationButton from "@/components/NotificationButton"
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [isUpdatingToken, setIsUpdatingToken] = useState(false)
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin")
     }
   }, [status, router])
-
-  const handleTokenSubmit = async (token: string) => {
-    setIsUpdatingToken(true)
-    try {
-      const response = await fetch('/api/github/pat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ personalAccessToken: token }),
-      })
-
-      if (response.ok) {
-        // Refresh the page to show updated contributions
-        window.location.reload()
-      } else {
-        const error = await response.json()
-        alert(`Error: ${error.error || 'Failed to update token'}`)
-      }
-    } catch (error) {
-      console.error('Error updating token:', error)
-      alert('Failed to update token. Please try again.')
-    } finally {
-      setIsUpdatingToken(false)
-    }
-  }
 
   if (status === "loading") {
     return (
@@ -148,12 +120,6 @@ export default function Dashboard() {
 
         {/* Main Content */}
         <div className="lg:col-span-2">
-          {/* Personal Access Token Input */}
-          <PersonalAccessTokenInput 
-            onTokenSubmit={handleTokenSubmit}
-            isLoading={isUpdatingToken}
-          />
-
           {/* GitHub Contributions */}
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
@@ -166,7 +132,7 @@ export default function Dashboard() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
-                          username: session.user?.username 
+                          username: (session.user as any)?.githubUsername || session.user?.email?.split('@')[0] 
                         })
                       });
                       if (response.ok) {
@@ -181,10 +147,7 @@ export default function Dashboard() {
                   }}
                   className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
                 >
-                  Sync to Awtrix3
-                </button>
-                <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                  View Full History
+                  Sync to Devices
                 </button>
               </div>
             </div>

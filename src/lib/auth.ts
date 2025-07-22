@@ -2,7 +2,6 @@ import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import GitHubProvider from "next-auth/providers/github"
 import { prisma } from "./prisma"
-import { GITHUB_SCOPES } from "./github-auth"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma) as any,
@@ -10,14 +9,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     GitHubProvider({
       clientId: process.env.GITHUB_APP_CLIENT_ID!,
       clientSecret: process.env.GITHUB_APP_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          scope: 'read:user user:email'
+        }
+      }
     }),
   ],
   callbacks: {
     async session({ session, user, token }) {
       if (session.user) {
         session.user.id = user?.id || token?.sub || '';
-        session.user.username = user?.username || (token?.username as string) || null;
+        session.user.githubUsername = user?.githubUsername || (token?.username as string) || null;
       }
       return session
     },
@@ -39,8 +42,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           await prisma.user.update({
             where: { id: existingUser.id },
             data: {
+              email: token.email || null,
+              name: token.name || null,
+              image: token.picture || null,
               githubId: profile.id?.toString() || null,
-              username: (profile as any).login || null,
+              githubUsername: (profile as any).login || null,
             },
           });
           token.sub = existingUser.id;
@@ -53,14 +59,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               name: token.name || null,
               image: token.picture || null,
               githubId: profile.id?.toString() || null,
-              username: (profile as any).login || null,
+              githubUsername: (profile as any).login || null,
             },
           });
           token.sub = newUser.id;
           token.username = (profile as any).login || null;
         }
       }
-      // No manual refresh logic needed; Auth.js handles it
       return token;
     },
     async signIn({ user, account, profile }) {

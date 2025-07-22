@@ -194,7 +194,7 @@ class MQTTService {
       const user = await prisma.user.findFirst({
         where: {
           OR: [
-            { username },
+            { githubUsername: username },
             { email: username },
             { email: { startsWith: username + '@' } }
           ]
@@ -353,7 +353,7 @@ class MQTTService {
       const user = await prisma.user.findFirst({
         where: {
           OR: [
-            { username },
+            { githubUsername: username },
             { email: username },
             { email: { startsWith: username + '@' } }
           ]
@@ -404,7 +404,7 @@ class MQTTService {
       const user = await prisma.user.findFirst({
         where: {
           OR: [
-            { username },
+            { githubUsername: username },
             { email: username },
             { email: { startsWith: username + '@' } }
           ]

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { GitHubContributionsData, GitHubContribution } from '@/lib/github-auth';
+import { GitHubContributionsData, GitHubContribution } from '@/types/github';
 
 interface GitHubContributionsProps {
   username?: string;

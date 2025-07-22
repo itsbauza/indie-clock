@@ -33,14 +33,9 @@ model User {
   emailVerified       DateTime?
   image               String?
   githubId            String?           @unique
-  username            String?           @unique
-  tokenExpiresAt      DateTime?
-  rabbitmqUsername    String?           @unique
-  rabbitmqPassword    String?
+  githubUsername      String?           @unique
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
-  patUpdatedAt        DateTime?
-  personalAccessToken String?
   accounts            Account[]
   rabbitmqMessages    RabbitMQMessage[]
   devices             Device[]

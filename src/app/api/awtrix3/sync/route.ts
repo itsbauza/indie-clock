@@ -15,9 +15,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { username } = await request.json();
     // Use the GitHub username from session if available, otherwise fall back to request body or email prefix
-    const targetUsername = username || session.user.username || session.user.email?.split('@')[0];
+    const targetUsername = session.user.githubUsername;
 
     if (!targetUsername) {
       return NextResponse.json(
@@ -32,7 +31,7 @@ export async function POST(request: NextRequest) {
         OR: [
           { id: session.user.id },
           { email: session.user.email },
-          { username: targetUsername },
+          { githubUsername: targetUsername },
         ]
       }
     });
@@ -44,42 +43,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch fresh data from GitHub API
-    let contributionsData;
-    let hasPrivateAccess = false;
-
-    if (user.personalAccessToken) {
-      // Use personal access token for private contributions
-      contributionsData = await GitHubService.fetchGitHubContributionsWithUserToken(
-        targetUsername,
-        user.personalAccessToken
+    if (!user.githubUsername) {
+      return NextResponse.json(
+        { error: 'No GitHub username associated with this account' },
+        { status: 400 }
       );
-      hasPrivateAccess = true;
-    } else {
-      // Try GitHub App token
-      const account = await prisma.account.findFirst({
-        where: {
-          userId: user.id,
-          provider: 'github'
-        }
-      });
-      
-      if (account?.access_token) {
-        contributionsData = await GitHubService.fetchGitHubContributionsWithUserToken(
-          targetUsername,
-          account.access_token
-        );
-        hasPrivateAccess = false;
-      } else {
-        return NextResponse.json(
-          { error: 'No access token found' },
-          { status: 401 }
-        );
-      }
     }
 
+    // Use the new OAuth2-based method
+    const contributionsData = await GitHubService.fetchGitHubContributionsWithOAuth2(user.id);
+
+    const hasPrivateAccess = false; // Only public contributions
+
     // Publish to Awtrix3 custom app via MQTT
-    mqttService.publishAwtrix3CustomApp(targetUsername, contributionsData);
+    mqttService.publishAwtrix3CustomApp(user.githubUsername, contributionsData);
 
     return NextResponse.json({
       success: true,

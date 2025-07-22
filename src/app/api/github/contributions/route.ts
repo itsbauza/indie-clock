@@ -32,56 +32,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const username = user.username;
-    if (!username) {
+    if (!user.githubUsername) {
       return NextResponse.json(
-        { error: 'No username associated with this account' },
+        { error: 'No GitHub username associated with this account' },
         { status: 400 }
       );
     }
 
-    let contributionsData;
-    let hasPrivateAccess = false;
-
-    // Always fetch fresh data from GitHub API
-    if (user.personalAccessToken) {
-      // Use personal access token to fetch fresh data from GitHub (includes private contributions)
-      contributionsData = await GitHubService.fetchGitHubContributionsWithUserToken(
-        username,
-        user.personalAccessToken
-      );
-      hasPrivateAccess = true;
-    } else {
-      // Try to get GitHub App token from Account model
-      const account = await prisma.account.findFirst({
-        where: {
-          userId: user.id,
-          provider: 'github'
-        }
-      });
-      
-      if (account?.access_token) {
-        // Use GitHub App token (public contributions only)
-        contributionsData = await GitHubService.fetchGitHubContributionsWithUserToken(
-          username,
-          account.access_token
-        );
-        hasPrivateAccess = false;
-      } else {
-        return NextResponse.json(
-          { error: 'No access token found. Please sign in again with GitHub or provide a Personal Access Token for private contributions.' },
-          { status: 401 }
-        );
-      }
-    }
+    // Use the new OAuth2-based method
+    const contributionsData = await GitHubService.fetchGitHubContributionsWithOAuth2(user.id);
     
     // Publish to MQTT for the Awtrix3 custom app
-    mqttService.publishAwtrix3CustomApp(username, contributionsData);
+    mqttService.publishAwtrix3CustomApp(user.githubUsername, contributionsData);
     
     return NextResponse.json({
       success: true,
       data: contributionsData,
-      hasPrivateAccess
     });
 
   } catch (error) {
