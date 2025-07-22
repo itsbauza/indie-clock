@@ -218,11 +218,7 @@ class MQTTService {
       const customAppMessage: AwtrixMessage = {
         // The contributions calendar is the primary visualization
         draw: contributionsCalendar,
-        // Restore essential properties for the app to display
-        duration: 20,
-        lifetime: 60,
         wake: true, // Wake screen to show the calendar
-        icon: 'github',
       };
 
       // Publish to each device using Awtrix3 custom app topics
