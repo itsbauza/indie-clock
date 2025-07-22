@@ -1,13 +1,13 @@
 {
   "users": [
     {
-      "name": "admin",
-      "password": "admin_password",
+      "name": "${RABBITMQ_ADMIN_USER}",
+      "password": "${RABBITMQ_ADMIN_PASSWORD}",
       "tags": "administrator"
     },
     {
-      "name": "backend",
-      "password": "backend_password",
+      "name": "${RABBITMQ_BACKEND_USER}",
+      "password": "${RABBITMQ_BACKEND_PASSWORD}",
       "tags": "management"
     }
   ],
@@ -18,14 +18,14 @@
   ],
   "permissions": [
     {
-      "user": "admin",
+      "user": "${RABBITMQ_ADMIN_USER}",
       "vhost": "/",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
     },
     {
-      "user": "backend",
+      "user": "${RABBITMQ_BACKEND_USER}",
       "vhost": "/",
       "configure": "amq\\.topic|users\\..*|awtrix.*|mqtt-subscription-.*",
       "write": "amq\\.topic|users\\..*|awtrix.*|mqtt-subscription-.*",

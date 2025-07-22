@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
+import { getServerSession } from "next-auth/next"
+import NextAuth from "@/lib/auth"
 import { mqttService } from '../../../lib/mqtt-service';
-import { auth } from '../../../lib/auth';
 import crypto from 'crypto';
-
-async function getUserFromRequest() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error('Not authenticated');
-  return await prisma.user.findUnique({ where: { id: session.user.id } });
-}
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getUserFromRequest();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await getServerSession(NextAuth) as any;
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Find user in database using session user ID
+    const user = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email },
+        ]
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
     const { name } = await req.json();
     // Generate unique credentials and prefix
@@ -52,10 +63,27 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const user = await getUserFromRequest();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await getServerSession(NextAuth) as any;
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Find user in database using session user ID
+    const user = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email },
+        ]
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const devices = await prisma.device.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
@@ -70,8 +98,25 @@ export async function GET() {
 
 export async function PUT(req: NextRequest) {
   try {
-    const user = await getUserFromRequest();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await getServerSession(NextAuth) as any;
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Find user in database using session user ID
+    const user = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email },
+        ]
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const { deviceId, name, updatePermissions } = await req.json();
     const device = await prisma.device.findFirst({ where: { id: deviceId, userId: user.id } });
     if (!device) return NextResponse.json({ error: 'Device not found' }, { status: 404 });
@@ -96,8 +141,24 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const user = await getUserFromRequest();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const session = await getServerSession(NextAuth) as any;
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Find user in database using session user ID
+    const user = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email },
+        ]
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
     const { searchParams } = new URL(req.url);
     const deviceId = searchParams.get('deviceId');

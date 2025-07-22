@@ -1,23 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getServerSession } from "next-auth/next"
+import NextAuth from "@/lib/auth"
 import { mqttService } from '@/lib/mqtt-service';
+import { prisma } from '@/lib/prisma';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(NextAuth) as any;
     
-    if (!session?.user?.email) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { appName } = await request.json();
+    // Find user in database using session user ID
+    const user = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email },
+        ]
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const { appName } = await req.json();
     
     if (!appName) {
       return NextResponse.json({ error: 'App name is required' }, { status: 400 });
     }
 
-    // Use the user's email as the username for MQTT service
-    const success = await mqttService.switchToApp(session.user.email, appName);
+    // Use the user's GitHub username or email as the username for MQTT service
+    const username = user.githubUsername || user.email?.split('@')[0] || user.id;
+    const success = await mqttService.switchToApp(username, appName);
     
     if (success) {
       return NextResponse.json({ 

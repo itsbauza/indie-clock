@@ -3,8 +3,9 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import GitHubProvider from "next-auth/providers/github"
 import { prisma } from "./prisma"
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export default NextAuth({
   adapter: PrismaAdapter(prisma) as any,
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_APP_CLIENT_ID!,
@@ -17,10 +18,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user?.id || token?.sub || '';
-        session.user.githubUsername = user?.githubUsername || (token?.username as string) || null;
+        session.user.id = token?.sub || '';
+        session.user.githubUsername = token?.username as string || null;
       }
       return session
     },
@@ -32,7 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { 
             OR: [
               { email: token.email },
-              { githubId: profile.id?.toString() }
+              { githubId: (profile as any).id?.toString() }
             ]
           }
         });
@@ -45,7 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               email: token.email || null,
               name: token.name || null,
               image: token.picture || null,
-              githubId: profile.id?.toString() || null,
+              githubId: (profile as any).id?.toString() || null,
               githubUsername: (profile as any).login || null,
             },
           });
@@ -58,7 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               email: token.email || null,
               name: token.name || null,
               image: token.picture || null,
-              githubId: profile.id?.toString() || null,
+              githubId: (profile as any).id?.toString() || null,
               githubUsername: (profile as any).login || null,
             },
           });

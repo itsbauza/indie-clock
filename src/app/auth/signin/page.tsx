@@ -1,15 +1,14 @@
 "use client"
 
 import { signIn, getProviders } from "next-auth/react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import Image from "next/image"
 
-export default function SignIn() {
+function SignInContent() {
   const [providers, setProviders] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get("callbackUrl") || "/"
+  const callbackUrl = searchParams?.get("callbackUrl") || "/"
 
   useEffect(() => {
     const fetchProviders = async () => {
@@ -102,5 +101,17 @@ export default function SignIn() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   )
 } 

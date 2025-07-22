@@ -1,20 +1,87 @@
 services:
+  # Database Migration Service
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: indie-clock-migration
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - MQTT_URL=mqtt://rabbitmq:1883
+      - MQTT_USERNAME=${RABBITMQ_BACKEND_USER}
+      - MQTT_PASSWORD=${RABBITMQ_BACKEND_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - indie-clock-network
+    command: ["npx", "prisma", "migrate", "deploy"]
+    restart: "no"
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: indie-clock-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GITHUB_APP_CLIENT_ID=${GITHUB_APP_CLIENT_ID}
+      - GITHUB_APP_CLIENT_SECRET=${GITHUB_APP_CLIENT_SECRET}
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_ADMIN_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_ADMIN_PASSWORD}
+      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST}
+      - RABBITMQ_API=http://rabbitmq:15672/api
+      - RABBITMQ_ADMIN_USER=${RABBITMQ_ADMIN_USER}
+      - RABBITMQ_ADMIN_PASS=${RABBITMQ_ADMIN_PASSWORD}
+      - MQTT_URL=mqtt://rabbitmq:1883
+      - MQTT_USERNAME=${RABBITMQ_BACKEND_USER}
+      - MQTT_PASSWORD=${RABBITMQ_BACKEND_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+
+
+    networks:
+      - indie-clock-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: indie-clock-postgres
-    env_file:
-      - .env.local
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - indie-clock-network
 
@@ -22,33 +89,37 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: indie-clock-rabbitmq
-    env_file:
-      - .env.local
-      - .env
+    restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_ADMIN_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASSWORD}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
       # Enable plugins on startup
       RABBITMQ_ENABLED_PLUGINS_FILE: /etc/rabbitmq/enabled_plugins
+      # RabbitMQ configuration environment variables
+      RABBITMQ_ADMIN_USER: ${RABBITMQ_ADMIN_USER}
+      RABBITMQ_ADMIN_PASSWORD: ${RABBITMQ_ADMIN_PASSWORD}
+      RABBITMQ_BACKEND_USER: ${RABBITMQ_BACKEND_USER}
+      RABBITMQ_BACKEND_PASSWORD: ${RABBITMQ_BACKEND_PASSWORD}
     ports:
       - "5672:5672"   # AMQP port
       - "15672:15672" # Management UI port
       - "1883:1883"   # MQTT port (RabbitMQ MQTT plugin)
       - "8883:8883"   # MQTT over SSL
-      # - "15675:15675" # MQTT over WebSockets (disabled - requires SSL)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq/definitions.template.json:/etc/rabbitmq/definitions.template.json:ro
+      - ./rabbitmq/rabbitmq.template.conf:/etc/rabbitmq/rabbitmq.template.conf:ro
       - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - ./scripts/rabbitmq-entrypoint.sh:/usr/local/bin/rabbitmq-entrypoint.sh:ro
+    entrypoint: ["/usr/local/bin/rabbitmq-entrypoint.sh"]
+
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: unless-stopped
     networks:
       - indie-clock-network
 
@@ -58,4 +129,4 @@ volumes:
 
 networks:
   indie-clock-network:
-    driver: bridge 
+    driver: bridge

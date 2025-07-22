@@ -127,8 +127,7 @@ Response:
   "data": {
     "totalContributions": 1234,
     "contributions": [...]
-  },
-  "hasPrivateAccess": true
+  }
 }
 ```
 

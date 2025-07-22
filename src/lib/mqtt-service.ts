@@ -44,7 +44,8 @@ class MQTTService {
 
   private async connect() {
     try {
-      const mqttUrl = process.env.MQTT_URL || 'mqtt://localhost:1883';
+      // In Docker environment, connect to RabbitMQ container
+      const mqttUrl = process.env.MQTT_URL || 'mqtt://rabbitmq:1883';
       const mqttUsername = process.env.MQTT_USERNAME || 'backend';
       const mqttPassword = process.env.MQTT_PASSWORD || 'backend_password';
 
@@ -238,7 +239,8 @@ class MQTTService {
           data: {
             userId: user.id,
             topic: appDataTopic,
-            message: customAppMessage as unknown as Prisma.JsonObject,
+            // @ts-ignore
+            message: customAppMessage as any,
           },
         });
       }
@@ -435,7 +437,8 @@ class MQTTService {
           data: {
             userId: user.id,
             topic: notifyTopic,
-            message: message as unknown as Prisma.JsonObject,
+            // @ts-ignore
+            message: message as any,
           },
         });
       }
@@ -528,10 +531,11 @@ class MQTTService {
     }
     
     try {
-      // Find user by username, email, or use the username as email prefix
+      // Find user by ID, username, email, or use the username as email prefix
       const user = await prisma.user.findFirst({
         where: {
           OR: [
+            { id: username }, // In case username is actually a user ID
             { githubUsername: username },
             { email: username },
             { email: { startsWith: username + '@' } }
@@ -571,7 +575,8 @@ class MQTTService {
           data: {
             userId: user.id,
             topic: switchTopic,
-            message: switchMessage as unknown as Prisma.JsonObject,
+            // @ts-ignore
+            message: switchMessage as any,
           },
         });
       }

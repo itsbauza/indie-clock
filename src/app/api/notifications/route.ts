@@ -1,14 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getServerSession } from "next-auth/next"
+import NextAuth from "@/lib/auth"
 import { mqttService } from '@/lib/mqtt-service';
 import type { AwtrixMessage } from '@/lib/mqtt-service';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(NextAuth) as any;
     
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Find user in database using session user ID
+    const user = await prisma.user.findFirst({
+      where: { 
+        OR: [
+          { id: session.user.id },
+          { email: session.user.email },
+        ]
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -38,7 +57,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Get username from email
-    const username = session.user.email.split('@')[0];
+    const username = user.email?.split('@')[0] || 'user';
     
     // Send notification
     const success = await mqttService.sendNotification(username, notificationMessage);

@@ -1,0 +1,59 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: indie-clock-postgres
+    env_file:
+      - .env.local
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - indie-clock-network
+
+  # RabbitMQ with Management Plugin and MQTT Support
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: indie-clock-rabbitmq
+    env_file:
+      - .env.local
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
+      # Enable plugins on startup
+      RABBITMQ_ENABLED_PLUGINS_FILE: /etc/rabbitmq/enabled_plugins
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI port
+      - "1883:1883"   # MQTT port (RabbitMQ MQTT plugin)
+      - "8883:8883"   # MQTT over SSL
+      # - "15675:15675" # MQTT over WebSockets (disabled - requires SSL)
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - indie-clock-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  indie-clock-network:
+    driver: bridge 

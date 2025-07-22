@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getServerSession } from "next-auth/next"
+import NextAuth from "@/lib/auth"
 import { prisma } from '@/lib/prisma';
 import { GitHubService } from '@/lib/github-service';
 import { mqttService } from '@/lib/mqtt-service';
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
+  const session = await getServerSession(NextAuth) as any;
   
   if (!session?.user) {
     return NextResponse.json(

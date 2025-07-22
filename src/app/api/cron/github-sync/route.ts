@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         console.log(`Processing user: ${user.githubUsername}`);
         
         // Check if user has GitHub account with access token
-        const githubAccount = user.accounts.find(acc => acc.provider === 'github');
+        const githubAccount = user.accounts.find((acc: unknown) => (acc as { provider: string }).provider === 'github');
         if (!githubAccount || !githubAccount.access_token) {
           console.log(`Skipping user ${user.githubUsername}: No GitHub access token`);
           results.failed++;
