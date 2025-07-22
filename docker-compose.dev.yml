@@ -29,6 +29,11 @@ services:
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
       # Enable plugins via environment variable instead of file mount
       RABBITMQ_ENABLED_PLUGINS: "rabbitmq_management,rabbitmq_mqtt"
+      # MQTT configuration
+      RABBITMQ_MQTT_LISTENERS_TCP_DEFAULT: 1883
+      RABBITMQ_MQTT_ALLOW_ANONYMOUS: false
+      RABBITMQ_MQTT_DEFAULT_USER: ${RABBITMQ_BACKEND_USER}
+      RABBITMQ_MQTT_DEFAULT_PASS: ${RABBITMQ_BACKEND_PASSWORD}
     ports:
       - "5672:5672"   # AMQP port
       - "15672:15672" # Management UI port
@@ -37,8 +42,6 @@ services:
       # - "15675:15675" # MQTT over WebSockets (disabled - requires SSL)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s

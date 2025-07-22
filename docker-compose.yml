@@ -79,6 +79,11 @@ services:
       RABBITMQ_ADMIN_PASSWORD: ${RABBITMQ_ADMIN_PASSWORD}
       RABBITMQ_BACKEND_USER: ${RABBITMQ_BACKEND_USER}
       RABBITMQ_BACKEND_PASSWORD: ${RABBITMQ_BACKEND_PASSWORD}
+      # MQTT configuration
+      RABBITMQ_MQTT_LISTENERS_TCP_DEFAULT: 1883
+      RABBITMQ_MQTT_ALLOW_ANONYMOUS: false
+      RABBITMQ_MQTT_DEFAULT_USER: ${RABBITMQ_BACKEND_USER}
+      RABBITMQ_MQTT_DEFAULT_PASS: ${RABBITMQ_BACKEND_PASSWORD}
     ports:
       - "5672:5672"   # AMQP port
       - "15672:15672" # Management UI port
@@ -86,10 +91,6 @@ services:
       - "8883:8883"   # MQTT over SSL
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-      - ./rabbitmq/definitions.template.json:/etc/rabbitmq/definitions.template.json:ro
-      - ./rabbitmq/rabbitmq.template.conf:/etc/rabbitmq/rabbitmq.template.conf:ro
-      - ./scripts/rabbitmq-entrypoint.sh:/usr/local/bin/rabbitmq-entrypoint.sh:ro
-    entrypoint: ["/usr/local/bin/rabbitmq-entrypoint.sh"]
 
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
