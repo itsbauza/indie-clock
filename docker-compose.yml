@@ -72,8 +72,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_ADMIN_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASSWORD}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
-      # Enable plugins on startup
-      RABBITMQ_ENABLED_PLUGINS_FILE: /etc/rabbitmq/enabled_plugins
+      # Enable plugins via environment variable instead of file mount
+      RABBITMQ_ENABLED_PLUGINS: "rabbitmq_management,rabbitmq_mqtt"
       # RabbitMQ configuration environment variables
       RABBITMQ_ADMIN_USER: ${RABBITMQ_ADMIN_USER}
       RABBITMQ_ADMIN_PASSWORD: ${RABBITMQ_ADMIN_PASSWORD}
@@ -88,7 +88,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./rabbitmq/definitions.template.json:/etc/rabbitmq/definitions.template.json:ro
       - ./rabbitmq/rabbitmq.template.conf:/etc/rabbitmq/rabbitmq.template.conf:ro
-      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
       - ./scripts/rabbitmq-entrypoint.sh:/usr/local/bin/rabbitmq-entrypoint.sh:ro
     entrypoint: ["/usr/local/bin/rabbitmq-entrypoint.sh"]
 
