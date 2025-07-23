@@ -6,8 +6,6 @@ services:
       dockerfile: Dockerfile
     container_name: indie-clock-app
     restart: unless-stopped
-    ports:
-      - "3000:${PORT}"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
@@ -28,15 +26,14 @@ services:
       rabbitmq:
         condition: service_healthy
     command: ["sh", "-c", "npx prisma migrate deploy && node server.js"]
-
     networks:
       - indie-clock-network
+      - coolify
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   # PostgreSQL Database
   postgres:
@@ -47,8 +44,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -70,19 +65,13 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASS}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
       # Plugin setup
-      RABBITMQ_ENABLED_PLUGINS: "rabbitmq_management,rabbitmq_mqtt"
+      RABBITMQ_ENABLED_PLUGINS: "rabbitmq_management,rabbitmq_management_agent,rabbitmq_mqtt"
       RABBITMQ_ENABLED_PLUGINS_FILE: /var/lib/rabbitmq/enabled_plugins.conf
       # MQTT configuration
       RABBITMQ_MQTT_LISTENERS_TCP_DEFAULT: 1883
       RABBITMQ_MQTT_ALLOW_ANONYMOUS: false
-    ports:
-      - "5672:5672"   # AMQP port
-      - "15672:15672" # Management UI port
-      - "1883:1883"   # MQTT port (RabbitMQ MQTT plugin)
-      - "8883:8883"   # MQTT over SSL
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 30s
@@ -91,6 +80,7 @@ services:
       start_period: 30s
     networks:
       - indie-clock-network
+      - coolify
 
 volumes:
   postgres_data:
@@ -99,3 +89,5 @@ volumes:
 networks:
   indie-clock-network:
     driver: bridge
+  coolify:
+    external: true
