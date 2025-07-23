@@ -19,7 +19,7 @@ services:
       - RABBITMQ_API=http://rabbitmq:15672/api
       - RABBITMQ_ADMIN_USER=${RABBITMQ_ADMIN_USER}
       - RABBITMQ_ADMIN_PASS=${RABBITMQ_ADMIN_PASS}
-      - MQTT_URL=mqtt://rabbitmq:1883
+      - MQTT_URL=mqtts://rabbitmq:8883
       - MQTT_USERNAME=${RABBITMQ_ADMIN_USER}
       - MQTT_PASSWORD=${RABBITMQ_ADMIN_PASS}
     depends_on:
@@ -70,7 +70,14 @@ services:
       RABBITMQ_ENABLED_PLUGINS_FILE: /var/lib/rabbitmq/enabled_plugins.conf
       # MQTT configuration
       RABBITMQ_MQTT_LISTENERS_TCP_DEFAULT: 1883
+      RABBITMQ_MQTT_LISTENERS_SSL_DEFAULT: 8883
       RABBITMQ_MQTT_ALLOW_ANONYMOUS: false
+      # SSL configuration (Coolify managed)
+      RABBITMQ_SSL_CERTFILE: /etc/ssl/certs/cert.pem
+      RABBITMQ_SSL_KEYFILE: /etc/ssl/private/key.pem
+      RABBITMQ_SSL_CACERTFILE: /etc/ssl/certs/chain.pem
+    ports:
+      - "8883:8883"   # MQTT over SSL port (RabbitMQ MQTT plugin)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:

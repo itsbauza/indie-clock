@@ -40,11 +40,7 @@ services:
       RABBITMQ_MQTT_LISTENERS_TCP_DEFAULT: 1883
       RABBITMQ_MQTT_ALLOW_ANONYMOUS: false
     ports:
-      - "5672:5672"   # AMQP port
-      - "15672:15672" # Management UI port
-      - "1883:1883"   # MQTT port (RabbitMQ MQTT plugin)
-      - "8883:8883"   # MQTT over SSL
-      # - "15675:15675" # MQTT over WebSockets (disabled - requires SSL)
+      - "1883:1883"   # MQTT over SSL port (RabbitMQ MQTT plugin)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
