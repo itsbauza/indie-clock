@@ -1,9 +1,57 @@
 import { prisma } from './prisma';
 
 export class GitHubService {
+  static async refreshGitHubAccessToken(account: any) {
+    if (!account.refresh_token) {
+      throw new Error('Cannot refresh GitHub access token because no refresh token is available. Please re-authenticate with GitHub.');
+    }
+
+    const params = new URLSearchParams({
+      client_id: process.env.GITHUB_APP_CLIENT_ID as string,
+      client_secret: process.env.GITHUB_APP_CLIENT_SECRET as string,
+      grant_type: 'refresh_token',
+      refresh_token: account.refresh_token,
+    });
+
+    const response = await fetch('https://github.com/login/oauth/access_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+      },
+      body: params.toString(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to refresh GitHub access token: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const refreshedTokens = await response.json();
+
+    if (!refreshedTokens.access_token) {
+      throw new Error(`GitHub did not return a new access token. Response: ${JSON.stringify(refreshedTokens)}`);
+    }
+
+    // Persist the new tokens/expiry in the database
+    const updatedAccount = await prisma.account.update({
+      where: { id: account.id },
+      data: {
+        access_token: refreshedTokens.access_token,
+        expires_at: refreshedTokens.expires_in ? Math.floor(Date.now() / 1000) + refreshedTokens.expires_in : null,
+        refresh_token: refreshedTokens.refresh_token ?? account.refresh_token,
+        refresh_token_expires_in: refreshedTokens.refresh_token_expires_in ?? account.refresh_token_expires_in,
+        scope: refreshedTokens.scope ?? account.scope,
+        token_type: refreshedTokens.token_type ?? account.token_type,
+      },
+    });
+
+    return updatedAccount;
+  }
+
   static async fetchGitHubContributionsWithOAuth2(userId: string) {
     // Get the user's GitHub account from the database
-    const account = await prisma.account.findFirst({
+    let account = await prisma.account.findFirst({
       where: {
         userId: userId,
         provider: 'github'
@@ -12,6 +60,15 @@ export class GitHubService {
 
     if (!account) {
       throw new Error('GitHub account not found. Please sign in with GitHub first.');
+    }
+
+    // Refresh the token proactively if it's expired (GitHub returns expires_at in seconds)
+    if (account.expires_at && account.expires_at * 1000 < Date.now()) {
+      try {
+        account = await this.refreshGitHubAccessToken(account);
+      } catch (err) {
+        throw err instanceof Error ? err : new Error('Failed to refresh GitHub access token');
+      }
     }
 
     if (!account.access_token) {
@@ -45,7 +102,7 @@ export class GitHubService {
       }
     `;
 
-    const response = await fetch("https://api.github.com/graphql", {
+    let response = await fetch("https://api.github.com/graphql", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -58,13 +115,44 @@ export class GitHubService {
       })
     });
 
+    // Attempt to handle invalid/expired tokens by refreshing once
     if (!response.ok) {
-      const errorText = await response.text();      
-      // Check if it's a scope/permission issue
-      if (response.status === 403 || response.status === 401) {
-        throw new Error(`GitHub API access denied. The token may not have proper scopes. Please re-authenticate with GitHub. Error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+
+      if (response.status === 401 || response.status === 403) {
+        // Token might be expired or revoked – try to refresh once
+        try {
+          account = await this.refreshGitHubAccessToken(account);
+
+          // Retry the request with the new token
+          const retryRes = await fetch("https://api.github.com/graphql", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "User-Agent": "IndieClock-App",
+              "Authorization": `Bearer ${account.access_token}`,
+            },
+            body: JSON.stringify({
+              query,
+              variables: { userName: user.githubUsername },
+            }),
+          });
+
+          if (retryRes.ok) {
+            // Replace the response reference so the normal processing continues below
+            response = retryRes;
+          } else {
+            const retryText = await retryRes.text();
+            throw new Error(`GitHub GraphQL API error after token refresh: ${retryRes.status} ${retryRes.statusText} - ${retryText}`);
+          }
+        } catch (refreshErr) {
+          throw refreshErr instanceof Error
+            ? refreshErr
+            : new Error('Failed to refresh GitHub access token');
+        }
       }
-      
+
+      // Other errors – just propagate
       throw new Error(`GitHub GraphQL API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
