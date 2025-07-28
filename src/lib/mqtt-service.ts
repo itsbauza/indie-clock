@@ -39,7 +39,16 @@ class MQTTService {
   private isConnected = false;
 
   constructor() {
-    this.connect();
+    // Don't connect immediately - only connect when needed
+    // This prevents connection attempts during build time
+  }
+
+  private async ensureConnected() {
+    if (this.isConnected && this.client) {
+      return;
+    }
+    
+    await this.connect();
   }
 
   private async connect() {
@@ -185,6 +194,8 @@ class MQTTService {
    * Uses the proper Awtrix3 MQTT topics for custom apps
    */
   public async publishAwtrix3CustomApp(username: string, contributionsData: any) {
+    await this.ensureConnected();
+    
     if (!this.isConnected || !this.client) {
       console.error('MQTT not connected');
       return;
@@ -341,6 +352,8 @@ class MQTTService {
    * This allows the Awtrix3 device to request fresh data
    */
   public async publishAwtrix3CustomAppSync(username: string) {
+    await this.ensureConnected();
+    
     if (!this.isConnected || !this.client) {
       console.error('MQTT not connected');
       return;
@@ -392,6 +405,8 @@ class MQTTService {
    * Uses the Awtrix3 notify topic: [PREFIX]/notify
    */
   public async sendNotification(username: string, message: AwtrixMessage) {
+    await this.ensureConnected();
+    
     if (!this.isConnected || !this.client) {
       console.error('MQTT not connected');
       return false;
@@ -609,6 +624,8 @@ class MQTTService {
    * Uses the Awtrix3 switch topic: [PREFIX]/switch
    */
   public async switchToApp(username: string, appName: string): Promise<boolean> {
+    await this.ensureConnected();
+    
     if (!this.isConnected || !this.client) {
       console.error('MQTT not connected');
       return false;
