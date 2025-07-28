@@ -27,7 +27,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    command: ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+    command: ["sh", "-c", "npx prisma migrate deploy && ./scripts/startup.sh"]
     networks:
       - indie-clock-network
     healthcheck:
