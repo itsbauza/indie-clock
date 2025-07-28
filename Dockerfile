@@ -60,6 +60,9 @@ COPY --from=builder /app/public ./public
 # Copy Prisma schema and migrations
 COPY --from=builder /app/prisma ./prisma
 
+# Copy startup scripts
+COPY --from=builder /app/scripts ./scripts
+
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
@@ -69,6 +72,8 @@ USER nextjs
 
 EXPOSE 3000
 
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
-CMD ["node", "server.js"]
+# Make startup script executable and run it
+RUN chmod +x scripts/startup.sh
+
+# Use the startup script that handles both app startup and user restoration
+CMD ["./scripts/startup.sh"]

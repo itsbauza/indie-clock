@@ -451,6 +451,87 @@ class MQTTService {
   }
 
   /**
+   * Update RabbitMQ definitions file to include new users and reload
+   * This makes users persist across RabbitMQ restarts
+   */
+  private async updateRabbitMQDefinitions(username: string, password: string, topicPrefix: string): Promise<boolean> {
+    try {
+      const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
+      const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
+      const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+
+      // Convert topic prefix to MQTT format (dots to slashes)
+      const mqttTopicPrefix = topicPrefix.replace(/\./g, '/');
+
+      // Get current definitions
+      const getDefinitionsResponse = await fetch(`${rabbitmqApiUrl}/definitions`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${adminUser}:${adminPass}`).toString('base64')}`
+        }
+      });
+
+      if (!getDefinitionsResponse.ok) {
+        console.error('Failed to get current definitions:', await getDefinitionsResponse.text());
+        return false;
+      }
+
+      const currentDefinitions = await getDefinitionsResponse.json();
+
+      // Check if user already exists in definitions
+      const userExists = currentDefinitions.users?.some((user: any) => user.name === username);
+      if (userExists) {
+        console.log(`User ${username} already exists in definitions`);
+        return true;
+      }
+
+      // Add new user to definitions
+      const newUser = {
+        name: username,
+        password: password,
+        tags: "management"
+      };
+
+      const newPermission = {
+        user: username,
+        vhost: "/",
+        configure: `${mqttTopicPrefix}.*|mqtt-subscription-.*`,
+        write: `${mqttTopicPrefix}.*|amq\\.topic|mqtt-subscription-.*`,
+        read: `${mqttTopicPrefix}.*|amq\\.topic|mqtt-subscription-.*`
+      };
+
+      // Update definitions with new user and permissions
+      const updatedDefinitions = {
+        ...currentDefinitions,
+        users: [...(currentDefinitions.users || []), newUser],
+        permissions: [...(currentDefinitions.permissions || []), newPermission]
+      };
+
+      // Upload updated definitions
+      const updateDefinitionsResponse = await fetch(`${rabbitmqApiUrl}/definitions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${Buffer.from(`${adminUser}:${adminPass}`).toString('base64')}`
+        },
+        body: JSON.stringify(updatedDefinitions)
+      });
+
+      if (!updateDefinitionsResponse.ok) {
+        console.error('Failed to update definitions:', await updateDefinitionsResponse.text());
+        return false;
+      }
+
+      console.log(`✅ Added user ${username} to RabbitMQ definitions for persistence`);
+      return true;
+
+    } catch (error) {
+      console.error('Error updating RabbitMQ definitions:', error);
+      return false;
+    }
+  }
+
+  /**
    * Create MQTT user and permissions for a device
    * This creates an actual MQTT user with topic-specific permissions
    */
@@ -462,6 +543,9 @@ class MQTTService {
       const success = await this.createMQTTUser(username, password, prefix);
       
       if (success) {
+        // Also update the definitions file for persistence
+        await this.updateRabbitMQDefinitions(username, password, prefix);
+        
         console.log(`✅ MQTT user ${username} created successfully`);
         console.log(`📡 Topic pattern: ${prefix.replace(/\./g, '/')}.*`);
         console.log(`🔐 Username: ${username}`);
@@ -597,6 +681,71 @@ class MQTTService {
       return await this.deleteMQTTUser(username);
     } catch (error) {
       console.error('Error in deleteRabbitMQUserAndPermissions:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Restore all MQTT users from database on startup
+   * This ensures all registered devices have their users recreated after RabbitMQ restarts
+   */
+  public async restoreUsersFromDatabase(): Promise<void> {
+    try {
+      console.log('🔄 Restoring MQTT users from database...');
+      
+      // Get all devices from database
+      const devices = await prisma.device.findMany({
+        select: {
+          rabbitmqUsername: true,
+          rabbitmqPassword: true,
+          topicPrefix: true,
+        }
+      });
+
+      console.log(`Found ${devices.length} devices to restore`);
+
+      for (const device of devices) {
+        try {
+          // Check if user already exists in RabbitMQ
+          const userExists = await this.checkUserExists(device.rabbitmqUsername);
+          
+          if (!userExists) {
+            console.log(`Recreating MQTT user: ${device.rabbitmqUsername}`);
+            await this.createMQTTUser(device.rabbitmqUsername, device.rabbitmqPassword, device.topicPrefix);
+            await this.updateRabbitMQDefinitions(device.rabbitmqUsername, device.rabbitmqPassword, device.topicPrefix);
+          } else {
+            console.log(`MQTT user already exists: ${device.rabbitmqUsername}`);
+          }
+        } catch (error) {
+          console.error(`Error restoring user ${device.rabbitmqUsername}:`, error);
+        }
+      }
+
+      console.log('✅ MQTT user restoration completed');
+    } catch (error) {
+      console.error('Error restoring users from database:', error);
+    }
+  }
+
+  /**
+   * Check if a user exists in RabbitMQ
+   */
+  private async checkUserExists(username: string): Promise<boolean> {
+    try {
+      const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
+      const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
+      const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+
+      const response = await fetch(`${rabbitmqApiUrl}/users/${username}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${adminUser}:${adminPass}`).toString('base64')}`
+        }
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error(`Error checking if user ${username} exists:`, error);
       return false;
     }
   }
