@@ -63,6 +63,7 @@ services:
     restart: unless-stopped
     ports:
       - "1883:1883"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_ADMIN_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASS}
