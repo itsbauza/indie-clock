@@ -75,8 +75,5 @@ USER nextjs
 
 EXPOSE 3000
 
-# Make startup script executable and run it
-RUN chmod +x scripts/startup.sh
-
-# Use the startup script that handles both app startup and user restoration
-CMD ["./scripts/startup.sh"]
+# Default command (can be overridden by docker-compose.yml)
+CMD ["npm", "start"]
