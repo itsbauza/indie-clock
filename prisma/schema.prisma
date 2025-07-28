@@ -74,6 +74,17 @@ model Device {
   topicPrefix      String
   createdAt        DateTime @default(now())
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settings         DeviceSettings?
 
   @@map("devices")
+}
+
+model DeviceSettings {
+  id        String   @id @default(cuid())
+  deviceId  String   @unique
+  settings  Json
+  updatedAt DateTime @updatedAt
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@map("device_settings")
 }

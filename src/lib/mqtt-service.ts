@@ -767,6 +767,119 @@ class MQTTService {
     }
   }
 
+  /**
+   * Apply device settings to the hardware device via MQTT
+   * Sends configuration commands to the AWTRIX device
+   */
+  public async applyDeviceSettings(topicPrefix: string, settings: any): Promise<boolean> {
+    await this.ensureConnected();
+    
+    if (!this.isConnected || !this.client) {
+      console.error('MQTT not connected');
+      return false;
+    }
+    
+    try {
+      const baseTopic = topicPrefix.replace(/\./g, '/');
+      
+      // Send settings to the device configuration topic
+      const configTopic = `${baseTopic}/config`;
+      const configMessage = {
+        type: 'settings',
+        settings: settings,
+        timestamp: new Date().toISOString()
+      };
+      
+      this.client.publish(configTopic, JSON.stringify(configMessage), { qos: 1, retain: true });
+      console.log(`Published device settings to: ${configTopic}`);
+      
+      // Also send individual setting commands for immediate effect
+      const commands = this.createSettingCommands(settings);
+      for (const command of commands) {
+        const commandTopic = `${baseTopic}/command`;
+        this.client.publish(commandTopic, JSON.stringify(command), { qos: 1, retain: false });
+        console.log(`Published command to: ${commandTopic}:`, command.type);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error applying device settings:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create individual setting commands for immediate device response
+   */
+  private createSettingCommands(settings: any): any[] {
+    const commands = [];
+    
+    // Brightness command
+    if (settings.brightness !== undefined) {
+      commands.push({
+        type: 'brightness',
+        value: settings.brightness,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Volume command
+    if (settings.volume !== undefined) {
+      commands.push({
+        type: 'volume',
+        value: settings.volume,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Auto brightness command
+    if (settings.autoBrightness !== undefined) {
+      commands.push({
+        type: 'autoBrightness',
+        value: settings.autoBrightness,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Timezone command
+    if (settings.timezone !== undefined) {
+      commands.push({
+        type: 'timezone',
+        value: settings.timezone,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Display timeout command
+    if (settings.displayTimeout !== undefined) {
+      commands.push({
+        type: 'displayTimeout',
+        value: settings.displayTimeout,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Power save mode command
+    if (settings.powerSaveMode !== undefined) {
+      commands.push({
+        type: 'powerSaveMode',
+        value: settings.powerSaveMode,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Sound enabled command
+    if (settings.soundEnabled !== undefined) {
+      commands.push({
+        type: 'soundEnabled',
+        value: settings.soundEnabled,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    return commands;
+  }
+
   public async disconnect() {
     if (this.client) {
       this.client.end(true);
