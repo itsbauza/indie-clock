@@ -52,6 +52,7 @@ export default NextAuth({
           });
           token.sub = existingUser.id;
           token.username = (profile as any).login || null;
+          token.githubUsername = (profile as any).login || null;
         } else {
           // Create new user with GitHub data
           const newUser = await prisma.user.create({
@@ -65,6 +66,7 @@ export default NextAuth({
           });
           token.sub = newUser.id;
           token.username = (profile as any).login || null;
+          token.githubUsername = (profile as any).login || null;
         }
       }
       return token;

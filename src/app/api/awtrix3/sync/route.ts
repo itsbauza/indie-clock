@@ -16,8 +16,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Use the GitHub username from session if available, otherwise fall back to request body or email prefix
-    const targetUsername = session.user.githubUsername;
+    console.log('session', session);
+    // Parse the request body to get the username
+    const body = await request.json();
+    const targetUsername = body.username;
 
     if (!targetUsername) {
       return NextResponse.json(

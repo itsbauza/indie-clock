@@ -41,6 +41,7 @@ services:
       RABBITMQ_MQTT_ALLOW_ANONYMOUS: false
     ports:
       - "1883:1883"   # MQTT over SSL port (RabbitMQ MQTT plugin)
+      - "15672:15672" # RabbitMQ Management interface
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:

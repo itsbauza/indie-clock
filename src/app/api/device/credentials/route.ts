@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       devices,
-      broker: process.env.RABBITMQ_BROKER_URL || 'mqtt://localhost:1883',
+      broker: process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883',
     });
   } catch (error) {
     console.error('Error fetching device credentials:', error);

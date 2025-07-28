@@ -46,8 +46,8 @@ class MQTTService {
     try {
       // In Docker environment, connect to RabbitMQ container
       const mqttUrl = process.env.MQTT_URL || 'mqtt://rabbitmq:1883';
-      const mqttUsername = process.env.MQTT_USERNAME || 'backend';
-      const mqttPassword = process.env.MQTT_PASSWORD || 'backend_password';
+      const mqttUsername = process.env.MQTT_USERNAME || 'admin';
+      const mqttPassword = process.env.MQTT_PASSWORD || 'admin_password';
 
       this.client = mqtt.connect(mqttUrl, {
         username: mqttUsername,
