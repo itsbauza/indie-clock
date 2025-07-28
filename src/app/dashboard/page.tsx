@@ -125,7 +125,7 @@ export default function Dashboard() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
-                          username: (session.user as any)?.githubUsername || session.user?.email?.split('@')[0] 
+                          username: session.user.githubUsername
                         })
                       });
                       if (response.ok) {
