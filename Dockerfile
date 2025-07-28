@@ -60,13 +60,16 @@ COPY --from=builder /app/public ./public
 # Copy Prisma schema and migrations
 COPY --from=builder /app/prisma ./prisma
 
-# Copy startup scripts
-COPY --from=builder /app/scripts ./scripts
+# Copy startup scripts with proper ownership
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy node_modules for scripts that need dependencies
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 USER nextjs
 

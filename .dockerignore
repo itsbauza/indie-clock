@@ -109,4 +109,4 @@ temp/
 *.sw?
 
 # Local development
-scripts/ 
+# scripts/ - Removed to allow scripts in Docker image 
