@@ -67,6 +67,28 @@ function makeRequest(url, options = {}) {
   });
 }
 
+// Wait until the RabbitMQ management API is ready
+async function waitForRabbitMQ(apiUrl, adminUser, adminPass, retries = 10, delayMs = 5000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await makeRequest(`${apiUrl}/overview`, {
+        headers: {
+          'Authorization': `Basic ${Buffer.from(`${adminUser}:${adminPass}`).toString('base64')}`
+        }
+      });
+      if (res.ok) {
+        console.log('🐇 RabbitMQ API is ready');
+        return;
+      }
+      console.log(`ℹ️  RabbitMQ API not ready yet (status ${res.status}). Retrying in ${delayMs / 1000}s...`);
+    } catch (err) {
+      console.log(`ℹ️  Unable to connect to RabbitMQ API (attempt ${attempt}/${retries}): ${err.message}. Retrying in ${delayMs / 1000}s...`);
+    }
+    await new Promise((res) => setTimeout(res, delayMs));
+  }
+  throw new Error('RabbitMQ API not ready after multiple attempts');
+}
+
 async function restoreUsers() {
   try {
     console.log('🔄 Starting MQTT user restoration...');
@@ -85,6 +107,9 @@ async function restoreUsers() {
     const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
     const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
     const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+
+    // Ensure the RabbitMQ management API is ready before proceeding
+    await waitForRabbitMQ(rabbitmqApiUrl, adminUser, adminPass);
 
     for (const device of devices) {
       try {
