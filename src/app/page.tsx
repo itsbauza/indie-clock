@@ -1,21 +1,9 @@
-'use client';
-
-import { useSession } from 'next-auth/react';
+import { getServerSession } from "next-auth/next";
+import NextAuth from "@/lib/auth";
 import Link from "next/link";
 
-export default function Home() {
-  const { data: session, status } = useSession();
-
-  if (status === "loading") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+export default async function Home() {
+  const session = await getServerSession(NextAuth);
 
   return (
     <>
@@ -199,14 +187,14 @@ export default function Home() {
 
           <div className="space-y-12">
             {/* Row 1 */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1 bg-gray-100 rounded-2xl p-8 text-center">
-                <div className="text-6xl mb-4">👻</div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2">Invisible progress</h3>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-8 lg:space-y-0">
+              <div className="flex-1 bg-gray-100 rounded-2xl p-6 lg:p-8 text-center">
+                <div className="text-4xl lg:text-6xl mb-4">👻</div>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-700 mb-2">Invisible progress</h3>
                 <p className="text-gray-600">Your commits disappear into the void</p>
               </div>
               
-              <div className="mx-8 flex items-center">
+              <div className="hidden lg:flex mx-8 items-center">
                 <div className="w-16 h-0.5 bg-gradient-to-r from-gray-300 to-indigo-500"></div>
                 <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center ml-2 ">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,22 +203,22 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="flex-1 bg-gradient-to-br from-indigo-50 to-emerald-50 border-2 border-indigo-200 rounded-2xl p-8 text-center">
-                <div className="text-6xl mb-4">💡</div>
-                <h3 className="text-xl font-bold text-indigo-700 mb-2">Your code lights up your desk</h3>
+              <div className="flex-1 bg-gradient-to-br from-indigo-50 to-emerald-50 border-2 border-indigo-200 rounded-2xl p-6 lg:p-8 text-center">
+                <div className="text-4xl lg:text-6xl mb-4">💡</div>
+                <h3 className="text-lg lg:text-xl font-bold text-indigo-700 mb-2">Your code lights up your desk</h3>
                 <p className="text-indigo-600">Real-time glow for every commit</p>
               </div>
             </div>
 
             {/* Row 2 */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1 bg-gray-100 rounded-2xl p-8 text-center">
-                <div className="text-6xl mb-4">💀</div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2">Streaks die on weekends</h3>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-8 lg:space-y-0">
+              <div className="flex-1 bg-gray-100 rounded-2xl p-6 lg:p-8 text-center">
+                <div className="text-4xl lg:text-6xl mb-4">💀</div>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-700 mb-2">Streaks die on weekends</h3>
                 <p className="text-gray-600">No reminder, no accountability</p>
               </div>
               
-              <div className="mx-8 flex items-center">
+              <div className="hidden lg:flex mx-8 items-center">
                 <div className="w-16 h-0.5 bg-gradient-to-r from-gray-300 to-green-500"></div>
                 <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center ml-2 ">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,22 +227,22 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="flex-1 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-8 text-center">
-                <div className="text-6xl mb-4">🔥</div>
-                <h3 className="text-xl font-bold text-green-700 mb-2">Friendly pixel nudge</h3>
+              <div className="flex-1 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 lg:p-8 text-center">
+                <div className="text-4xl lg:text-6xl mb-4">🔥</div>
+                <h3 className="text-lg lg:text-xl font-bold text-green-700 mb-2">Friendly pixel nudge</h3>
                 <p className="text-green-600">Keeps you on track every day</p>
               </div>
             </div>
 
             {/* Row 3 */}
-            <div className="flex items-center justify-between">
-              <div className="flex-1 bg-gray-100 rounded-2xl p-8 text-center">
-                <div className="text-6xl mb-4">📁</div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2">Side projects stall</h3>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-8 lg:space-y-0">
+              <div className="flex-1 bg-gray-100 rounded-2xl p-6 lg:p-8 text-center">
+                <div className="text-4xl lg:text-6xl mb-4">📁</div>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-700 mb-2">Side projects stall</h3>
                 <p className="text-gray-600">Ideas collect dust in folders</p>
               </div>
               
-              <div className="mx-8 flex items-center">
+              <div className="hidden lg:flex mx-8 items-center">
                 <div className="w-16 h-0.5 bg-gradient-to-r from-gray-300 to-purple-500"></div>
                 <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center ml-2 ">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,9 +251,9 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="flex-1 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-8 text-center">
-                <div className="text-6xl mb-4">🚀</div>
-                <h3 className="text-xl font-bold text-purple-700 mb-2">Daily glow = momentum</h3>
+              <div className="flex-1 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-6 lg:p-8 text-center">
+                <div className="text-4xl lg:text-6xl mb-4">🚀</div>
+                <h3 className="text-lg lg:text-xl font-bold text-purple-700 mb-2">Daily glow = momentum</h3>
                 <p className="text-purple-600">Tiny dopamine hits keep you shipping</p>
               </div>
             </div>
