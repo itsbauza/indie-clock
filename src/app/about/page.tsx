@@ -3,7 +3,7 @@ export default function About() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">About Indie Clock</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">About Indie Grid</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           A modern platform for tracking GitHub contributions and syncing data to your Awtrix clock display.
         </p>
@@ -13,7 +13,7 @@ export default function About() {
       <div className="bg-white rounded-lg shadow-sm p-8 mb-12">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Our Mission</h2>
         <p className="text-gray-600 leading-relaxed">
-          Indie Clock was created to help developers visualize their coding activity and bring their GitHub contribution data to life through physical displays. We believe that seeing your progress in a tangible way can be incredibly motivating and help you maintain consistent coding habits.
+          Indie Grid was created to help developers visualize their coding activity and bring their GitHub contribution data to life through physical displays. We believe that seeing your progress in a tangible way can be incredibly motivating and help you maintain consistent coding habits.
         </p>
       </div>
 

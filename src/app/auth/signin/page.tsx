@@ -38,7 +38,7 @@ function SignInContent() {
             </svg>
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Welcome to Indie Clock
+            Welcome to Indie Grid
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Sign in to track your GitHub contributions and manage your settings

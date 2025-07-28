@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Indie Clock",
+  title: "Indie Grid",
   description: "Track your GitHub contributions and more",
 };
 
