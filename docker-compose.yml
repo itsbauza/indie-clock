@@ -63,6 +63,8 @@ services:
     image: rabbitmq:3-management-alpine
     container_name: indie-clock-rabbitmq
     restart: unless-stopped
+    ports:
+      - "1883:1883"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_ADMIN_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASS}
