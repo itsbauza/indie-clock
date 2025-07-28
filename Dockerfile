@@ -65,6 +65,9 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Copy startup scripts with proper ownership
+COPY --from=builder --chown=nextjs:nodejs /app/scripts ./scripts
+
 # Copy node_modules for scripts that need dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
