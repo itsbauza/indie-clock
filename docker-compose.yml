@@ -27,7 +27,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    command: ["sh", "-c", "npm run db:migrate && npm run startup:restore-users"]
+    command: ["sh", "-c", "npx prisma migrate deploy && node scripts/startup-restore-users.js && node server.js"]
     networks:
       - indie-clock-network
     healthcheck:
