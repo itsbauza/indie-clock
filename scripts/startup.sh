@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Start the Next.js application in the background
 echo "🚀 Starting Next.js application..."
 node server.js &
