@@ -106,7 +106,7 @@ async function restoreUsers() {
 
     const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
     const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
-    const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+    const adminPass = process.env.RABBITMQ_ADMIN_PASS || '';
 
     // Ensure the RabbitMQ management API is ready before proceeding
     await waitForRabbitMQ(rabbitmqApiUrl, adminUser, adminPass);

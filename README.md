@@ -1,37 +1,46 @@
 # Indie Clock
 
-A GitHub contribution tracker for Awtrix clocks with RabbitMQ messaging and PostgreSQL database.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.4-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.12.0-green)](https://www.prisma.io/)
+[![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.12-orange)](https://www.rabbitmq.com/)
 
-## Features
+A GitHub contribution tracker for Awtrix clocks with RabbitMQ messaging and PostgreSQL database. Display your GitHub activity on your Awtrix clock in real-time!
+
+## ✨ Features
 
 - **GitHub Integration**: Fetch and cache user contribution data
 - **RabbitMQ Messaging**: Secure message publishing for Awtrix clocks
 - **PostgreSQL Database**: Persistent storage with Prisma ORM
 - **User Management**: Secure authentication with Auth.js v5 (Google & GitHub)
 - **Real-time Updates**: Live data synchronization with Awtrix displays
+- **Automated Sync**: Hourly GitHub contribution updates via cron jobs
+- **Multi-device Support**: Manage multiple Awtrix clocks per user
 
-## Architecture
+## 🏗️ Architecture
 
-- **Frontend**: Next.js with TypeScript
-- **Backend**: Next.js API routes
+- **Frontend**: Next.js 15 with TypeScript and Tailwind CSS
+- **Backend**: Next.js API routes with Auth.js v5
 - **Database**: PostgreSQL with Prisma ORM
 - **Message Broker**: RabbitMQ with MQTT plugin
 - **Authentication**: Auth.js v5 with Google and GitHub OAuth
+- **Deployment**: Docker Compose for easy setup
 
-## Quick Start
+## 🚀 Quick Start
 
-### 1. Prerequisites
+### Prerequisites
 
 - Docker and Docker Compose
 - Node.js 18+
 - Google OAuth App
 - GitHub OAuth App
 
-### 2. Setup
+### 1. Clone and Setup
 
 ```bash
 # Clone the repository
-git clone <your-repo>
+git clone https://github.com/yourusername/indie-clock.git
 cd indie-clock
 
 # Make setup script executable
@@ -45,7 +54,11 @@ docker-compose up -d
 
 # Install dependencies
 npm install
+```
 
+### 2. Database Setup
+
+```bash
 # Setup database
 npm run db:generate
 npm run db:migrate
@@ -58,7 +71,7 @@ Create `.env.local` with:
 
 ```env
 # Database
-DATABASE_URL="postgresql://postgres:postgres_password@localhost:5432/indie_clock"
+DATABASE_URL="postgresql://postgres:your_secure_postgres_password@localhost:5432/indie_clock"
 
 # Auth.js Configuration
 NEXTAUTH_URL="http://localhost:3000"
@@ -73,8 +86,8 @@ GITHUB_CLIENT_ID="your-github-client-id"
 GITHUB_CLIENT_SECRET="your-github-client-secret"
 
 # RabbitMQ Configuration
-RABBITMQ_URL=amqp://backend:backend_password@localhost:5672
-RABBITMQ_ADMIN_URL=http://admin:admin_password@localhost:15672
+RABBITMQ_URL=amqp://backend:your_secure_backend_password@localhost:5672
+RABBITMQ_ADMIN_URL=http://admin:your_secure_admin_password@localhost:15672
 
 # Cron Job Configuration (for hourly GitHub sync)
 CRON_SECRET_TOKEN="your-secure-cron-token-here"
@@ -101,15 +114,15 @@ CRON_SECRET_TOKEN="your-secure-cron-token-here"
 npm run dev
 ```
 
-## Access Points
+## 🌐 Access Points
 
 - **Application**: http://localhost:3000
 - **Sign In**: http://localhost:3000/auth/signin
-- **RabbitMQ Management**: http://localhost:15672 (admin/admin_password)
-- **pgAdmin**: http://localhost:5050 (admin@indieclock.com/admin_password)
+- **RabbitMQ Management**: http://localhost:15672 (admin/your_secure_admin_password)
+- **pgAdmin**: http://localhost:5050 (admin@indieclock.com/your_secure_admin_password)
 - **Prisma Studio**: `npm run db:studio`
 
-## API Endpoints
+## 📡 API Endpoints
 
 ### GitHub Contributions
 
@@ -150,7 +163,7 @@ This endpoint is designed to be called by a cron job every hour to:
 
 **Note**: This endpoint requires the `CRON_SECRET_TOKEN` environment variable for security.
 
-## Authentication
+## 🔐 Authentication
 
 The app uses Auth.js v5 with the following providers:
 
@@ -163,14 +176,14 @@ The app uses Auth.js v5 with the following providers:
 - Users can sign in with either Google or GitHub
 - GitHub users get additional access to contribution tracking features
 
-## RabbitMQ Topics
+## 📨 RabbitMQ Topics
 
 Each user gets their own secure topics:
 
 - `users.{username}.github-contributions` - GitHub contribution data
 - `users.{username}.status` - Status updates
 
-## Awtrix Configuration
+## ⚙️ Awtrix Configuration
 
 Configure your Awtrix clock to connect to RabbitMQ:
 
@@ -180,7 +193,7 @@ Configure your Awtrix clock to connect to RabbitMQ:
 - **Password**: Your RabbitMQ password
 - **Topic**: `users.{your-username}.github-contributions`
 
-## Database Schema
+## 🗄️ Database Schema
 
 ### Users
 - Auth.js user data (name, email, image)
@@ -206,7 +219,7 @@ Configure your Awtrix clock to connect to RabbitMQ:
 - MQTT topic prefixes
 - Device-specific credentials
 
-## Development
+## 🛠️ Development
 
 ### Available Scripts
 
@@ -220,6 +233,12 @@ npm run db:seed        # Seed database
 
 # RabbitMQ
 npm run rabbitmq:setup # Setup RabbitMQ users
+
+# Docker
+npm run docker:up      # Start Docker services
+npm run docker:down    # Stop Docker services
+npm run docker:logs    # View Docker logs
+npm run docker:health  # Check Docker health
 
 # Cron Job Management
 node scripts/setup-cron.js      # Setup hourly GitHub sync cron job
@@ -268,22 +287,25 @@ The cron job will:
 - Send updated data to all user devices via MQTT
 - Log results and errors for monitoring
 
-## Security
+## 🔒 Security
 
 - **Authentication**: Auth.js v5 with OAuth providers
 - **Authorization**: User-specific topic access
 - **Data Encryption**: Sensitive data encrypted in database
 - **Network Security**: Docker network isolation
 - **Session Security**: Database-stored sessions with expiration
+- **Environment Variables**: All secrets stored in environment variables
+- **No Hardcoded Secrets**: No passwords or API keys in source code
+- **Secure Defaults**: Empty fallbacks for missing environment variables
 
-## Monitoring
+## 📊 Monitoring
 
 - **RabbitMQ Management UI**: Monitor queues, exchanges, and connections
 - **pgAdmin**: Database monitoring and management
 - **Application Logs**: Next.js development logs
 - **Prisma Studio**: Database visualization and editing
 
-## Troubleshooting
+## 🐛 Troubleshooting
 
 ### Common Issues
 
@@ -304,14 +326,52 @@ docker-compose logs rabbitmq
 npm run dev
 ```
 
-## Contributing
+## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+We welcome contributions! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-## License
+### How to Contribute
 
-MIT License - see LICENSE file for details.
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Make your changes**
+4. **Add tests** if applicable
+5. **Commit your changes** (`git commit -m 'Add some amazing feature'`)
+6. **Push to the branch** (`git push origin feature/amazing-feature`)
+7. **Open a Pull Request**
+
+### Development Guidelines
+
+- Follow the existing code style
+- Add comments for complex logic
+- Update documentation as needed
+- Test your changes thoroughly
+- Ensure all tests pass
+
+### Code of Conduct
+
+This project is open source and available under the [MIT License](LICENSE). We are committed to providing a welcoming and inspiring community for all. Please read our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our approachable and respectable to everyone.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) - The React framework
+- [Auth.js](https://authjs.dev/) - Authentication for Next.js
+- [Prisma](https://www.prisma.io/) - Database toolkit
+- [RabbitMQ](https://www.rabbitmq.com/) - Message broker
+- [Awtrix](https://awtrix.blueforcer.de/) - Smart clock platform
+
+## 📞 Support
+
+If you have any questions or need help, please:
+
+1. Check the [Issues](https://github.com/yourusername/indie-clock/issues) page
+2. Create a new issue if your problem isn't already addressed
+3. Join our [Discussions](https://github.com/yourusername/indie-clock/discussions) for general questions
+
+---
+
+**Made with ❤️ for the open source community**

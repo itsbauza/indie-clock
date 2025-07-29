@@ -56,7 +56,7 @@ class MQTTService {
       // In Docker environment, connect to RabbitMQ container
       const mqttUrl = process.env.MQTT_URL || 'mqtt://rabbitmq:1883';
       const mqttUsername = process.env.MQTT_USERNAME || 'admin';
-      const mqttPassword = process.env.MQTT_PASSWORD || 'admin_password';
+      const mqttPassword = process.env.MQTT_PASSWORD || '';
 
       this.client = mqtt.connect(mqttUrl, {
         username: mqttUsername,
@@ -105,7 +105,7 @@ class MQTTService {
     try {
       const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
       const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
-      const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+      const adminPass = process.env.RABBITMQ_ADMIN_PASS || '';
 
       // Convert topic prefix to MQTT format (dots to slashes)
       const mqttTopicPrefix = topicPrefix.replace(/\./g, '/');
@@ -166,7 +166,7 @@ class MQTTService {
     try {
       const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
       const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
-      const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+      const adminPass = process.env.RABBITMQ_ADMIN_PASS || '';
 
       const response = await fetch(`${rabbitmqApiUrl}/users/${username}`, {
         method: 'DELETE',
@@ -473,7 +473,7 @@ class MQTTService {
     try {
       const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
       const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
-      const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+      const adminPass = process.env.RABBITMQ_ADMIN_PASS || '';
 
       // Convert topic prefix to MQTT format (dots to slashes)
       const mqttTopicPrefix = topicPrefix.replace(/\./g, '/');
@@ -585,7 +585,7 @@ class MQTTService {
       
       const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
       const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
-      const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+      const adminPass = process.env.RABBITMQ_ADMIN_PASS || '';
 
       // Convert topic prefix to MQTT format (dots to slashes)
       const mqttTopicPrefix = prefix.replace(/\./g, '/');
@@ -751,7 +751,7 @@ class MQTTService {
     try {
       const rabbitmqApiUrl = process.env.RABBITMQ_API || 'http://localhost:15672/api';
       const adminUser = process.env.RABBITMQ_ADMIN_USER || 'admin';
-      const adminPass = process.env.RABBITMQ_ADMIN_PASS || 'admin_password';
+      const adminPass = process.env.RABBITMQ_ADMIN_PASS || '';
 
       const response = await fetch(`${rabbitmqApiUrl}/users/${username}`, {
         method: 'GET',
