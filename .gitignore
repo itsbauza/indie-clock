@@ -43,3 +43,6 @@ next-env.d.ts
 # RabbitMQ generated config files
 rabbitmq/definitions.json
 rabbitmq/rabbitmq.conf
+
+# Bruno IndieClock
+IndieClock/

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,9 +15,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Indie Grid",
-  description: "Track your GitHub contributions and more",
+  description: "Turn your GitHub contributions into a vibrant pixel display on your desk",
 };
 
 export default function RootLayout({
@@ -27,10 +39,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script defer src="https://umami.beltech.es/script.js" data-website-id="f0137235-bd14-4634-92c7-987ccf7993b8"></script>
+        {process.env.NEXT_PUBLIC_ANALYTICS_URL && process.env.NEXT_PUBLIC_ANALYTICS_WEBSITE_ID && (
+          <script defer src={process.env.NEXT_PUBLIC_ANALYTICS_URL} data-website-id={process.env.NEXT_PUBLIC_ANALYTICS_WEBSITE_ID}></script>
+        )}
+        <meta name="apple-mobile-web-app-title" content="IndieGrid" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${spaceGrotesk.variable} antialiased bg-gray-50`}
       >
         <Providers>
           <div className="min-h-screen flex flex-col">
@@ -38,6 +53,7 @@ export default function RootLayout({
             <main className="flex-1">
               {children}
             </main>
+            <Footer />
           </div>
         </Providers>
       </body>

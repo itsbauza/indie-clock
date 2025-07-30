@@ -10,22 +10,22 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-emerald-50">
         {/* Enhanced decorative elements */}
-        <div className="absolute -top-56 -left-56 h-[32rem] w-[32rem] rounded-full bg-indigo-200 opacity-30 blur-3xl "></div>
-        <div className="absolute -bottom-56 -right-56 h-[32rem] w-[32rem] rounded-full bg-amber-100 opacity-30 blur-3xl  "></div>
-        <div className="absolute top-1/4 right-1/4 h-[16rem] w-[16rem] rounded-full bg-emerald-200 opacity-20 blur-2xl  "></div>
+        <div className="absolute -top-56 -left-56 h-[16rem] md:h-[32rem] w-[16rem] md:w-[32rem] rounded-full bg-indigo-200 opacity-30 blur-3xl"></div>
+        <div className="absolute -bottom-56 -right-56 h-[16rem] md:h-[32rem] w-[16rem] md:w-[32rem] rounded-full bg-amber-100 opacity-30 blur-3xl"></div>
+        <div className="absolute top-1/4 right-1/4 h-[8rem] md:h-[16rem] w-[8rem] md:w-[16rem] rounded-full bg-emerald-200 opacity-20 blur-2xl"></div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left side - Text content */}
-            <div>
+            <div className="lg:order-1">
               <div className="inline-flex items-center bg-white/60 backdrop-blur-sm rounded-full px-4 py-2 border border-indigo-200/50 mb-6">
                 <div className="w-2 h-2 bg-green-500 rounded-full  mr-2"></div>
                 <span className="text-sm font-semibold text-gray-700">Live from your desk</span>
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight mb-6 font-space-grotesk">
                 Light up your desk&nbsp;
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 ">with your code</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500">with your code</span>
               </h1>
               <p className="text-lg md:text-xl text-gray-700 mb-10">
                 Indie Grid turns your GitHub contributions into a vibrant pixel display on your Awtrix clock. Stay motivated, showcase your progress and celebrate every commit — right on your desk.
@@ -56,31 +56,72 @@ export default async function Home() {
                 <div className="mb-12">
                   <Link
                     href="/dashboard"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg shadow-indigo-500/20 transition-colors inline-flex items-center justify-center"
+                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg shadow-indigo-500/20 transition-colors inline-flex items-center justify-center"
                   >
                     Go to Dashboard
-                    <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </Link>
                 </div>
               )}
 
-              {/* Testimonial */}
-              <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 hover:shadow-lg transition-shadow">
-                <div className="flex items-start space-x-4">
+              {/* Mobile Hero Image - shown only on mobile, positioned after CTA */}
+              <div className="lg:hidden flex justify-center mb-12">
+                <div className="relative max-w-sm">
+                  {/* Terminal overlay - centered at bottom */}
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 z-10 bg-gray-900/95 text-green-400 px-4 py-3 rounded-xl text-xs font-mono shadow-2xl ring-1 ring-green-500/30 backdrop-blur-md border border-gray-700 w-72 max-w-[calc(100vw-2rem)]">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-gray-400 ml-2 font-semibold text-xs">~/indie-life</span>
+                    </div>
+                    <div className="text-green-400 leading-relaxed">
+                      <div className="flex items-center">
+                        <span className="text-purple-400">❯</span> 
+                        <span className="ml-1 text-xs">git commit -m</span>
+                        <span className="text-yellow-300 ml-1 font-semibold text-xs">"Ship daily 🚢"</span>
+                      </div>
+                      <div className="text-gray-500 text-xs mt-1 italic">
+                        # Building habits that build products 💪
+                      </div>
+                      <div className="flex items-center mt-2">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1 animate-pulse"></div>
+                        <span className="text-green-300 text-xs">Syncing to Awtrix...</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hero Image */}
+                  <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+                    <img
+                      src="/hero.png"
+                      alt="Awtrix clock displaying GitHub contributions on developer's desk"
+                      className="w-full h-auto"
+                    />
+                    
+                    {/* Gradient overlay for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial - hidden on mobile, shown on lg+ */}
+              <div className="hidden lg:block bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 hover:shadow-lg transition-shadow">
+                <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
                   <img
                     src="https://pbs.twimg.com/profile_images/1899738748155232256/Hc38ZOYn_400x400.jpg"
                     alt="Llorenç Bauza"
-                    className="w-12 h-12 rounded-full ring-2 ring-indigo-200"
+                    className="w-12 h-12 rounded-full ring-2 ring-indigo-200 mx-auto sm:mx-0"
                   />
-                  <div>
-                    <p className="text-gray-700 mb-2 italic">
+                  <div className="text-center sm:text-left sm:ml-2">
+                    <p className="text-gray-700 mb-2 italic text-sm sm:text-base">
                       "It's cool because it helps keeping consistent at shipping and motivated. Seeing your commits light up on your desk is pretty neat!"
                     </p>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2">
                       <span className="font-semibold text-gray-900">Llorenç Bauza</span>
-                      <span className="text-gray-500">•</span>
+                      <span className="hidden sm:inline text-gray-500">•</span>
                       <span className="text-gray-500 text-sm">@itsbauza</span>
                       <div className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-semibold">Creator</div>
                     </div>
@@ -89,8 +130,8 @@ export default async function Home() {
               </div>
             </div>
 
-            {/* Right side - Image/Visual */}
-            <div className="flex justify-center lg:justify-end">
+            {/* Right side - Image/Visual - hidden on mobile */}
+            <div className="hidden lg:flex justify-center lg:justify-end lg:order-2">
               <div className="relative">
                 {/* Hero Image */}
                 <div className="relative overflow-hidden rounded-2xl shadow-2xl">
@@ -105,12 +146,12 @@ export default async function Home() {
                 </div>
                 
                 {/* Floating developer-focused badges */}
-                <div className="absolute -top-6 -left-10 group">
+                <div className="absolute -top-6 -left-10 group hidden md:block">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-green-400 rounded-lg blur-lg opacity-40 "></div>
+                    <div className="absolute inset-0 bg-green-400 rounded-lg blur-lg opacity-40"></div>
                     <div className="relative bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-4 rounded-lg text-base font-bold shadow-2xl ring-2 ring-white/30 backdrop-blur-lg transform group-hover:scale-110 group-hover:rotate-2 transition-all duration-300">
                       <div className="flex items-center space-x-3">
-                        <svg className="w-6 h-6 " fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
                         </svg>
                         <div className="text-left">
@@ -122,9 +163,9 @@ export default async function Home() {
                   </div>
                 </div>
                 
-                <div className="absolute -bottom-10 -right-16 group">
+                <div className="absolute -bottom-10 -right-16 group hidden md:block">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-lg blur-lg opacity-40  "></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-lg blur-lg opacity-40"></div>
                     <div className="relative bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-4 rounded-lg text-base font-bold shadow-2xl ring-2 ring-white/30 backdrop-blur-lg transform group-hover:scale-110 group-hover:-rotate-2 transition-all duration-300">
                       <div className="flex items-center space-x-3">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,7 +188,7 @@ export default async function Home() {
                 </div>
 
                 {/* Terminal overlay */}
-                <div className="absolute -bottom-4 -left-14 bg-gray-900/90 text-green-400 px-6 py-4 rounded-xl text-sm font-mono shadow-2xl ring-1 ring-green-500/30 backdrop-blur-md border border-gray-700">
+                <div className="absolute -bottom-4 -left-14 bg-gray-900/90 text-green-400 px-6 py-4 rounded-xl text-sm font-mono shadow-2xl ring-1 ring-green-500/30 backdrop-blur-md border border-gray-700 hidden md:block">
                   <div className="flex items-center space-x-2 mb-3">
                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
@@ -164,9 +205,33 @@ export default async function Home() {
                       # Building habits that build products 💪
                     </div>
                     <div className="flex items-center mt-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full  mr-2"></div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                       <span className="text-green-300 text-xs">Syncing to Awtrix...</span>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Testimonial - shown only on mobile */}
+          <div className="lg:hidden mt-16 max-w-2xl mx-auto">
+            <div className="bg-white/60 backdrop-blur-sm rounded-xl p-6 border border-gray-200/50 hover:shadow-lg transition-shadow">
+              <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                <img
+                  src="https://pbs.twimg.com/profile_images/1899738748155232256/Hc38ZOYn_400x400.jpg"
+                  alt="Llorenç Bauza"
+                  className="w-12 h-12 rounded-full ring-2 ring-indigo-200 mx-auto sm:mx-0"
+                />
+                <div className="text-center sm:text-left sm:ml-2">
+                  <p className="text-gray-700 mb-2 italic text-sm sm:text-base">
+                    "It's cool because it helps keeping consistent at shipping and motivated. Seeing your commits light up on your desk is pretty neat!"
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-2">
+                    <span className="font-semibold text-gray-900">Llorenç Bauza</span>
+                    <span className="hidden sm:inline text-gray-500">•</span>
+                    <span className="text-gray-500 text-sm">@itsbauza</span>
+                    <div className="bg-blue-100 text-blue-600 px-2 py-1 rounded-full text-xs font-semibold">Creator</div>
                   </div>
                 </div>
               </div>
@@ -179,10 +244,10 @@ export default async function Home() {
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-space-grotesk">
               From ghost-commits → glowing victories
             </h2>
-            <p className="text-xl text-gray-600">Turn "I'll code tomorrow" into "Wow, 47-day streak!"</p>
+            <p className="text-lg sm:text-xl text-gray-600">Turn "I'll code tomorrow" into "Wow, 47-day streak!"</p>
           </div>
 
           <div className="space-y-12">
@@ -278,11 +343,11 @@ export default async function Home() {
       {/* Feature Highlights */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-space-grotesk">
             Why developers choose&nbsp;
-            <span className="text-indigo-600">Indie Grid</span>
+            <span className="text-indigo-600 font-bold">Indie Grid</span>
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
             Because seeing progress beats hiding it
           </p>
         </div>
@@ -351,15 +416,15 @@ export default async function Home() {
       {/* How it works */}
       <section id="how-it-works" className="bg-gradient-to-br from-gray-100 via-gray-50 to-indigo-50 py-20 relative overflow-hidden">
         {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-200 rounded-full blur-3xl opacity-20"></div>
+        <div className="absolute top-0 right-0 w-32 md:w-64 h-32 md:h-64 bg-indigo-200 rounded-full blur-3xl opacity-20"></div>
+        <div className="absolute bottom-0 left-0 w-24 md:w-48 h-24 md:h-48 bg-emerald-200 rounded-full blur-3xl opacity-20"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-space-grotesk">
               From zero to glowing in <span className="text-indigo-600">2 minutes</span>
             </h2>
-            <p className="text-xl text-gray-600">No complex setup, no API keys, no headaches</p>
+            <p className="text-lg sm:text-xl text-gray-600">No complex setup, no API keys, no headaches</p>
           </div>
           
           <div className="grid gap-8 md:grid-cols-3 text-center relative">
@@ -471,21 +536,21 @@ export default async function Home() {
       <section className="py-24 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-72 h-72 bg-indigo-500 rounded-full blur-3xl opacity-20 "></div>
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20  "></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-pink-500 rounded-full blur-3xl opacity-10  "></div>
+          <div className="absolute top-0 left-0 w-36 md:w-72 h-36 md:h-72 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
+          <div className="absolute bottom-0 right-0 w-48 md:w-96 h-48 md:h-96 bg-purple-500 rounded-full blur-3xl opacity-20"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 md:w-64 h-32 md:h-64 bg-pink-500 rounded-full blur-3xl opacity-10"></div>
         </div>
         
         <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-6 leading-tight font-space-grotesk">
             Ready to turn your desk into a
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400 ">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-400 to-purple-400">
               productivity powerhouse?
             </span>
           </h2>
           
-          <p className="text-xl text-indigo-100 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-indigo-100 mb-10 max-w-2xl mx-auto leading-relaxed">
             Start building the coding habit you've always wanted. Your future self will thank you when you're celebrating your first 100-day streak.
           </p>
           
@@ -504,7 +569,7 @@ export default async function Home() {
             </Link>
             
             <div className="text-white/80 text-sm">
-              <div className="flex items-center justify-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <div className="flex items-center">
                   <svg className="w-4 h-4 mr-1 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

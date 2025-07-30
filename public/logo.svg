@@ -1,0 +1,20 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="36" height="36" rx="8" fill="#4F46E5"/>
+  
+  <!-- Grid squares - centered within the 36x36 viewBox -->
+  <!-- Row 1 -->
+  <rect x="8" y="8" width="5" height="5" rx="1" fill="white"/>
+  <rect x="15.5" y="8" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+  <rect x="23" y="8" width="5" height="5" rx="1" fill="white"/>
+  
+  <!-- Row 2 -->
+  <rect x="8" y="15.5" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+  <rect x="15.5" y="15.5" width="5" height="5" rx="1" fill="white"/>
+  <rect x="23" y="15.5" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+  
+  <!-- Row 3 -->
+  <rect x="8" y="23" width="5" height="5" rx="1" fill="white"/>
+  <rect x="15.5" y="23" width="5" height="5" rx="1" fill="white" opacity="0.7"/>
+  <rect x="23" y="23" width="5" height="5" rx="1" fill="white"/>
+</svg> 
