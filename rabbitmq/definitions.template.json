@@ -52,11 +52,25 @@
       "pattern": "^(users|awtrix)\\.",
       "apply-to": "queues",
       "definition": {
-        "message-ttl": 3600000,
-        "max-length": 1000,
-        "overflow": "reject-publish"
+        "message-ttl": 1800000,
+        "max-length": 500,
+        "max-length-bytes": 10485760,
+        "overflow": "drop-head",
+        "expires": 7200000
       },
       "priority": 0
+    },
+    {
+      "vhost": "/",
+      "name": "memory-optimization",
+      "pattern": ".*",
+      "apply-to": "queues",
+      "definition": {
+        "max-length": 1000,
+        "max-length-bytes": 52428800,
+        "overflow": "drop-head"
+      },
+      "priority": 1
     }
   ]
 } 

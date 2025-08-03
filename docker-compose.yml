@@ -61,10 +61,19 @@ services:
     image: rabbitmq:3-management-alpine
     container_name: indie-clock-rabbitmq
     restart: unless-stopped
+    # Resource limits to prevent memory issues
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
     ports:
-      - "1883:1883"
-      - "15672:15672"
+      - "1883:1883" 
     environment:
+      # RabbitMQ configuration
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_ADMIN_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_ADMIN_PASS}
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
