@@ -1,6 +1,5 @@
 # Indie Clock
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-15.3.4-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.12.0-green)](https://www.prisma.io/)
@@ -13,7 +12,8 @@ A GitHub contribution tracker for Awtrix clocks with RabbitMQ messaging and Post
 - **GitHub Integration**: Fetch and cache user contribution data
 - **RabbitMQ Messaging**: Secure message publishing for Awtrix clocks
 - **PostgreSQL Database**: Persistent storage with Prisma ORM
-- **User Management**: Secure authentication with Auth.js v5 (Google & GitHub)
+- **User Management**: Secure authentication with Auth.js v4 (
+GitHub)
 - **Real-time Updates**: Live data synchronization with Awtrix displays
 - **Automated Sync**: Hourly GitHub contribution updates via cron jobs
 - **Multi-device Support**: Manage multiple Awtrix clocks per user
@@ -24,7 +24,7 @@ A GitHub contribution tracker for Awtrix clocks with RabbitMQ messaging and Post
 - **Backend**: Next.js API routes with Auth.js v5
 - **Database**: PostgreSQL with Prisma ORM
 - **Message Broker**: RabbitMQ with MQTT plugin
-- **Authentication**: Auth.js v5 with Google and GitHub OAuth
+- **Authentication**: NextAuth.js v4 with Google and GitHub OAuth
 - **Deployment**: Docker Compose for easy setup
 
 ## 🚀 Quick Start
@@ -95,13 +95,6 @@ CRON_SECRET_TOKEN="your-secure-cron-token-here"
 
 ### 4. OAuth Setup
 
-#### Google OAuth
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add `http://localhost:3000/api/auth/callback/google` to authorized redirect URIs
-
 #### GitHub OAuth
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Create a new OAuth App
@@ -118,31 +111,9 @@ npm run dev
 
 - **Application**: http://localhost:3000
 - **Sign In**: http://localhost:3000/auth/signin
-- **RabbitMQ Management**: http://localhost:15672 (admin/your_secure_admin_password)
-- **pgAdmin**: http://localhost:5050 (admin@indieclock.com/your_secure_admin_password)
 - **Prisma Studio**: `npm run db:studio`
 
 ## 📡 API Endpoints
-
-### GitHub Contributions
-
-```
-GET /api/github/contributions?username=<username>
-```
-
-Parameters:
-- `username`: GitHub username (optional, defaults to authenticated user)
-
-Response:
-```json
-{
-  "success": true,
-  "data": {
-    "totalContributions": 1234,
-    "contributions": [...]
-  }
-}
-```
 
 **Note**: This endpoint always fetches fresh data from the GitHub API. No caching is performed.
 
@@ -165,15 +136,14 @@ This endpoint is designed to be called by a cron job every hour to:
 
 ## 🔐 Authentication
 
-The app uses Auth.js v5 with the following providers:
+The app uses NextAuth.js v4 with the following providers:
 
-- **Google**: For general user authentication
 - **GitHub**: For GitHub-specific features and contribution tracking
 
 ### Session Management
 
-- Sessions are stored in the database
-- Users can sign in with either Google or GitHub
+- Sessions are stored in a jwt
+- Users can sign in with GitHub
 - GitHub users get additional access to contribution tracking features
 
 ## 📨 RabbitMQ Topics
@@ -181,7 +151,6 @@ The app uses Auth.js v5 with the following providers:
 Each user gets their own secure topics:
 
 - `users.{username}.github-contributions` - GitHub contribution data
-- `users.{username}.status` - Status updates
 
 ## ⚙️ Awtrix Configuration
 
@@ -191,12 +160,12 @@ Configure your Awtrix clock to connect to RabbitMQ:
 - **Port**: 1883 (MQTT)
 - **Username**: Your RabbitMQ username
 - **Password**: Your RabbitMQ password
-- **Topic**: `users.{your-username}.github-contributions`
+- **Topic**: `{your-id}`
 
 ## 🗄️ Database Schema
 
 ### Users
-- Auth.js user data (name, email, image)
+- NextAuth.js user data (name, email, image)
 - GitHub integration data (for GitHub users)
 - RabbitMQ credentials
 - Session management
@@ -240,15 +209,9 @@ npm run docker:down    # Stop Docker services
 npm run docker:logs    # View Docker logs
 npm run docker:health  # Check Docker health
 
-# Cron Job Management
-node scripts/setup-cron.js      # Setup hourly GitHub sync cron job
-node scripts/monitor-cron.js    # Monitor cron job status and health
-node scripts/manual-github-sync.js  # Manually trigger GitHub sync
-```
-
 ### Adding New Users
 
-1. **Create OAuth Apps** (Google and/or GitHub) and get credentials
+1. **Create OAuth App** (GitHub) and get credentials
 2. **Users sign in** through the web interface
 3. **Create RabbitMQ user** with proper permissions
 4. **Configure Awtrix clock** with user credentials
@@ -271,16 +234,6 @@ The application includes an automated hourly sync that fetches GitHub contributi
    crontab -e
    ```
 
-4. **Monitor the Job**:
-   ```bash
-   node scripts/monitor-cron.js
-   ```
-
-5. **Manual Testing**:
-   ```bash
-   node scripts/manual-github-sync.js
-   ```
-
 The cron job will:
 - Run every hour at the top of the hour
 - Fetch GitHub contributions for all users with GitHub accounts
@@ -295,13 +248,10 @@ The cron job will:
 - **Network Security**: Docker network isolation
 - **Session Security**: Database-stored sessions with expiration
 - **Environment Variables**: All secrets stored in environment variables
-- **No Hardcoded Secrets**: No passwords or API keys in source code
-- **Secure Defaults**: Empty fallbacks for missing environment variables
 
 ## 📊 Monitoring
 
 - **RabbitMQ Management UI**: Monitor queues, exchanges, and connections
-- **pgAdmin**: Database monitoring and management
 - **Application Logs**: Next.js development logs
 - **Prisma Studio**: Database visualization and editing
 
