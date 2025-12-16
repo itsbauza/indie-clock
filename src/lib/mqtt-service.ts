@@ -218,13 +218,19 @@ class MQTTService {
         return;
       }
 
-      // Get user's devices
+      // Get user's devices with their settings
       const devices = await prisma.device.findMany({
-        where: { userId: user.id }
+        where: { userId: user.id },
+        include: {
+          deviceSettings: true
+        }
       });
 
       // Create a GitHub contributions calendar visualization - this is the main focus
-      const contributionsCalendar = this.createContributionsCalendar(contributionsData.contributions);
+      const contributionsCalendar = this.createContributionsCalendar(
+        contributionsData.contributions,
+        devices[0]?.deviceSettings?.settings || { weekStartDay: 'sunday' }
+      );
 
       // Awtrix3 custom app message format focused on contributions calendar
       const customAppMessage: AwtrixMessage = {
@@ -266,7 +272,7 @@ class MQTTService {
    * Creates a proper contribution chart with squares like GitHub's calendar
    * Optimized for 64x8 pixel display by creating a single bitmap
    */
-  private createContributionsCalendar(contributions: any[]): any[] {
+  private createContributionsCalendar(contributions: any[], settings: any = {}): any[] {
     const WIDTH = 32; // 32 week columns for an 8x32 matrix
     const HEIGHT = 8; // 7 rows for Mon-Sun, 1 spare row (bottom)
     const BACKGROUND_COLOR = 0x000000; // Black background
@@ -303,22 +309,32 @@ class MQTTService {
       }
     }
 
-    // Determine the Monday of the current week (GitHub uses Monday-to-Sunday rows)
+    // Determine the start day of the current week - respects weekStartDay setting
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const currentWeekday = (today.getDay() + 6) % 7; // 0 = Monday … 6 = Sunday
-    const currentMonday = new Date(today);
-    currentMonday.setDate(today.getDate() - currentWeekday);
+    const weekStartDay = settings.weekStartDay || 'sunday';
+    
+    let currentWeekday: number;
+    if (weekStartDay === 'monday') {
+      // 0 = Monday … 6 = Sunday
+      currentWeekday = (today.getDay() + 6) % 7;
+    } else {
+      // 0 = Sunday … 6 = Saturday (default Sunday start)
+      currentWeekday = today.getDay();
+    }
+    
+    const currentWeekStart = new Date(today);
+    currentWeekStart.setDate(today.getDate() - currentWeekday);
 
-    // Earliest Monday we want to display (64 columns)
-    const earliestMonday = new Date(currentMonday);
-    earliestMonday.setDate(currentMonday.getDate() - (WIDTH - 1) * 7);
+    // Earliest week start we want to display (32 columns)
+    const earliestWeekStart = new Date(currentWeekStart);
+    earliestWeekStart.setDate(currentWeekStart.getDate() - (WIDTH - 1) * 7);
 
     // Render weeks left → right (oldest → newest) just like GitHub
     for (let week = 0; week < WIDTH; week++) {
       for (let day = 0; day < 7; day++) {
-        const date = new Date(earliestMonday);
-        date.setDate(earliestMonday.getDate() + week * 7 + day);
+        const date = new Date(earliestWeekStart);
+        date.setDate(earliestWeekStart.getDate() + week * 7 + day);
         const isoDate = date.toISOString().substring(0, 10);
         const count = contributionMap.get(isoDate) ?? 0;
 

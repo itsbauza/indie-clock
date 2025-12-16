@@ -5,9 +5,10 @@ import { GitHubContributionsData, GitHubContribution } from '@/types/github';
 
 interface GitHubContributionsProps {
   username?: string;
+  weekStartDay?: 'sunday' | 'monday';
 }
 
-export default function GitHubContributions({ username }: GitHubContributionsProps) {
+export default function GitHubContributions({ username, weekStartDay = 'sunday' }: GitHubContributionsProps) {
   const [contributions, setContributions] = useState<GitHubContributionsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,10 +118,18 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
       contributionsMap.set(contribution.date, contribution);
     });
     
-    // Find the most recent Sunday
+    // Find the start of the current week based on weekStartDay setting
     const today = new Date();
-    const lastSunday = new Date(today);
-    lastSunday.setDate(today.getDate() - today.getDay());
+    const weekStart = new Date(today);
+    
+    if (weekStartDay === 'monday') {
+      // Find the most recent Monday (0 = Monday … 6 = Sunday)
+      const dayOfWeek = (today.getDay() + 6) % 7;
+      weekStart.setDate(today.getDate() - dayOfWeek);
+    } else {
+      // Find the most recent Sunday (0 = Sunday … 6 = Saturday)
+      weekStart.setDate(today.getDate() - today.getDay());
+    }
     
     // Track seen months to place labels only on 1st occurrence
     const seenMonths = new Set<string>();
@@ -128,8 +137,8 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
     // Fill the grid from right (most recent week) to left
     for (let week = weeks - 1; week >= 0; week--) {
       for (let day = 0; day < days; day++) {
-        const cellDate = new Date(lastSunday);
-        cellDate.setDate(lastSunday.getDate() - (weeks - 1 - week) * 7 + day);
+        const cellDate = new Date(weekStart);
+        cellDate.setDate(weekStart.getDate() - (weeks - 1 - week) * 7 + day);
         const dateString = cellDate.toISOString().split('T')[0];
         grid[day][week] = contributionsMap.get(dateString) || null;
         
@@ -151,7 +160,9 @@ export default function GitHubContributions({ username }: GitHubContributionsPro
   };
 
   const { grid, monthPositions } = createContributionGrid();
-  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayLabels = weekStartDay === 'monday' 
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   // Responsive sizing using rem units
   const CELL_SIZE = 0.9375; // rem (15px equivalent)

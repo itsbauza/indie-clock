@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import GitHubContributions from "@/components/GitHubContributions"
 import DeviceRegistrationCard from "@/components/DeviceRegistrationCard"
@@ -11,12 +11,44 @@ import NotificationButton from "@/components/NotificationButton"
 export default function Dashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [weekStartDay, setWeekStartDay] = useState<'sunday' | 'monday'>('sunday')
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin")
     }
   }, [status, router])
+
+  // Fetch user's device settings to get weekStartDay preference
+  useEffect(() => {
+    if (status === "authenticated") {
+      const fetchDeviceSettings = async () => {
+        try {
+          // Fetch user's devices
+          const devicesResponse = await fetch('/api/device')
+          if (devicesResponse.ok) {
+            const devicesData = await devicesResponse.json()
+            const firstDevice = devicesData.devices?.[0]
+            
+            if (firstDevice) {
+              // Fetch settings for the first device
+              const settingsResponse = await fetch(`/api/device/${firstDevice.id}/settings`)
+              if (settingsResponse.ok) {
+                const settingsData = await settingsResponse.json()
+                setWeekStartDay(settingsData.settings?.weekStartDay || 'sunday')
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching device settings:', error)
+          // Default to sunday if there's an error
+          setWeekStartDay('sunday')
+        }
+      }
+      
+      fetchDeviceSettings()
+    }
+  }, [status])
 
   if (status === "loading") {
     return (
@@ -148,6 +180,7 @@ export default function Dashboard() {
             {session.user?.email && (
               <GitHubContributions 
                 username={session.user.email.split('@')[0]}
+                weekStartDay={weekStartDay}
               />
             )}
           </div>

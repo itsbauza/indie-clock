@@ -73,6 +73,7 @@ export async function GET(
       startupAnimation: true,
       powerSaveMode: false,
       customApps: [],
+      weekStartDay: 'sunday',
     };
 
     return NextResponse.json({ settings });

@@ -30,6 +30,7 @@ interface DeviceSettings {
   startupAnimation: boolean;
   powerSaveMode: boolean;
   customApps: string[];
+  weekStartDay: 'sunday' | 'monday';
 }
 
 export default function DeviceSettingsPage() {
@@ -65,6 +66,7 @@ export default function DeviceSettingsPage() {
     startupAnimation: true,
     powerSaveMode: false,
     customApps: [],
+    weekStartDay: 'sunday',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -490,6 +492,20 @@ export default function DeviceSettingsPage() {
                   <option value="DD/MM/YYYY">DD/MM/YYYY</option>
                   <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                   <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Week Start Day
+                </label>
+                <select
+                  value={settings.weekStartDay}
+                  onChange={(e) => setSettings({...settings, weekStartDay: e.target.value as 'sunday' | 'monday'})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="sunday">Sunday</option>
+                  <option value="monday">Monday</option>
                 </select>
               </div>
 
